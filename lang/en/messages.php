@@ -21,7 +21,7 @@ return [
     'other_apps' => 'Other Apps',
     'support' => 'Support',
     'custom' => 'Custom',
-    'components' => 'Components',
+    'components_ui' => 'Components',
     'inventory' => 'Inventory',
     'warehouse' => 'Warehouse',
     'received_orders' => 'Received Orders',

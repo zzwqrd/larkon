@@ -21,7 +21,7 @@ return [
     'other_apps' => 'تطبيقات أخرى',
     'support' => 'الدعم',
     'custom' => 'مخصص',
-    'components' => 'المكونات',
+    'components_ui' => 'المكونات',
     'inventory' => 'المخزون',
     'warehouse' => 'المستودع',
     'received_orders' => 'الطلبات المستلمة',
