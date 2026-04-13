@@ -104,4 +104,11 @@ return [
     'menu_item_2' => 'Menu Item 2',
     'menu_sub_item' => 'Menu Sub item',
     'disable_item' => 'Disable Item',
+    'are_you_sure' => 'Are you sure?',
+    'about_to_delete' => 'You are about to delete :count records!',
+    'yes_delete' => 'Yes, delete!',
+    'cancel' => 'Cancel',
+    'export' => 'Export',
+    'print' => 'Print',
+    'excel' => 'Excel',
 ];

@@ -104,4 +104,11 @@ return [
     'menu_item_2' => 'عنصر قائمة 2',
     'menu_sub_item' => 'عنصر فرعي',
     'disable_item' => 'عنصر غير مفعل',
+    'are_you_sure' => 'هل أنت متأكد؟',
+    'about_to_delete' => 'أنت على وشك حذف :count سجلات!',
+    'yes_delete' => 'نعم، احذف!',
+    'cancel' => 'إلغاء',
+    'export' => 'تصدير',
+    'print' => 'طباعة',
+    'excel' => 'إكسل',
 ];

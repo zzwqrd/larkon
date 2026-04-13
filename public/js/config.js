@@ -37,6 +37,10 @@
 
     if (savedConfig !== null) {
         config = JSON.parse(savedConfig);
+        // Force Sidebar Size to default always on load
+        if (config.menu) {
+            config.menu.size = "default";
+        }
     }
 
     window.config = config;

@@ -67,7 +67,7 @@
 
                               <div class="form-check mb-2">
                                    <input class="form-check-input" type="radio" name="data-menu-size"
-                                        id="leftbar-size-default" value="default">
+                                        id="leftbar-size-default" value="default" checked>
                                    <label class="form-check-label" for="leftbar-size-default">
                                         Default
                                    </label>
