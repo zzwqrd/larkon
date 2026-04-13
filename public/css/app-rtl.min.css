@@ -5,7 +5,7 @@
 :root {
   --bs-logo-lg-height: 24px;
   --bs-logo-sm-height: 26px;
-  --bs-main-nav-width: 280px;
+  --bs-main-nav-width: 220px;
   --bs-main-nav-width-sm: 75px;
   --bs-main-nav-item-icon-size: 22px;
   --bs-main-nav-item-font-size: 15px;
@@ -4549,6 +4549,8 @@ fieldset:disabled .btn {
   --bs-btn-disabled-color: #ffffff;
   --bs-btn-disabled-bg: #ff6c2f;
   --bs-btn-disabled-border-color: #ff6c2f;
+  font-size: 10px;
+
 }
 
 .btn-secondary {
@@ -4872,6 +4874,7 @@ fieldset:disabled .btn {
   --bs-btn-disabled-bg: transparent;
   --bs-btn-disabled-border-color: #5d7186;
   --bs-gradient: none;
+  font-size: 10px;
 }
 
 .btn-outline-success {
@@ -18035,7 +18038,8 @@ html[data-menu-size=hidden] .topbar {
   transition: all 0.3s ease-in-out;
   min-height: calc(100vh - var(--bs-topbar-height));
   padding-bottom: var(--bs-footer-height);
-  margin-right: var(--bs-main-nav-width);
+  /* margin-right: var(--bs-main-nav-width); */
+  margin-inline-start: 220px;
 }
 
 html[data-topbar-color=dark]:not([data-bs-theme=dark]) .page-content {

@@ -27,7 +27,8 @@
 [dir="rtl"] .wrapper .page-content,
 [dir="rtl"] .page-content {
     margin-left: 0 !important;
-    margin-right: 260px !important; /* ✅ تم الإصلاح */
+    /* margin-right: 260px !important; ✅ تم الإصلاح */
+     margin-inline-start: 220px;
 }
 
 [dir="rtl"] .topbar {

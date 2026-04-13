@@ -46,11 +46,18 @@
     </div>
 
     @include("layouts.partials/right-sidebar")
-    <!-- @include("layouts.partials/footer-scripts") -->
+    @include("layouts.partials/footer-scripts")
     {{-- Techzaa app bundle (per request) --}}
 
     <!-- Vendor Javascript (Require in all Page) -->
     <script src="{{ asset('js/vendor.js') }}"></script>
+    <script>
+        // Prevent Dropzone from auto-discovering so that page-specific Vite scripts can initialize it
+        if (window.Dropzone) {
+            Dropzone.autoDiscover = false;
+        }
+    </script>
+
 
     <!-- App Javascript (Require in all Page) -->
     <script src="{{ asset('js/app.min.js') }}"></script>
