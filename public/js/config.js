@@ -15,7 +15,7 @@
         theme: "light",             // ['light', 'dark']
 
         topbar: {
-            color: "light",       // ['light', 'dark']
+            color: "dark",       // ['light', 'dark']
         },
 
         menu: {
