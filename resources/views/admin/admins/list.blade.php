@@ -3,13 +3,8 @@
 @section('content')
     <div class="row">
         <div class="col-xl-12">
-            <x-ui.table-card 
-                title="Admins List" 
-                :addRoute="route('admins.create')"
-                :indexRoute="route('admins.list')"
-                :deleteRoute="url('admin/admins')"
-                :deleteAllRoute="route('admins.bulkDelete')"
-            >
+            <x-ui.table-card title="Admins List" :addRoute="route('admins.create')" :indexRoute="route('admins.list')"
+                :deleteRoute="url('admin/admins')" :deleteAllRoute="route('admins.bulkDelete')">
                 <div id="table_content_append">
                     {{-- AJAX will load the _table.blade.php content here --}}
                     <div class="text-center py-5">

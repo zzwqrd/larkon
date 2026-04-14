@@ -189,24 +189,40 @@ class RoleController extends Controller
 
         foreach ($routesArr as $route) {
             $name = $route->getName();
+            
+            // Filter system routes
             if ($name && !str_starts_with($name, '_') && !str_starts_with($name, 'ignition') && !str_starts_with($name, 'sanctum') && !str_starts_with($name, 'debugbar')) {
 
-                // Grouping logic: prioritize 'admin', 'general', 'users' prefixes
+                // Determine Group Name
+                $groupName = 'General';
                 $segments = explode('.', $name);
-                $groupName = count($segments) > 1 ? $segments[0] : 'general';
+                
+                // If it's a module route (e.g. admins.list or roles.index)
+                if (count($segments) > 1) {
+                    $groupName = $segments[0];
+                }
 
-                // Clean up group names for display
+                // If it's a core auth route (login, register), group as Authentication
+                if (in_array($name, ['login', 'register', 'logout', 'password.request', 'password.reset'])) {
+                    $groupName = 'Authentication';
+                }
+
                 $displayGroup = ucfirst($groupName);
 
                 $titleArr = $route->getAction('title');
                 $title = isset($titleArr[0]) ? __($titleArr[0]) : ucwords(str_replace(['.', '-', '_'], ' ', $name));
 
+                // We want to list all permissions but categorize them nicely
                 $groups[$displayGroup][] = [
                     'name' => $name,
-                    'title' => $title
+                    'title' => $title,
+                    'is_master' => $route->getAction('master') ?? false
                 ];
             }
         }
+
+        // Sort groups to make it look professional
+        ksort($groups);
 
         return $groups;
     }

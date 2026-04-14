@@ -10,7 +10,8 @@
                 </li>
             @else
                 <li class="page-item">
-                    <a class="page-link ajax-page-link" href="#!" data-page="{{ $items->currentPage() - 1 }}" rel="prev"><i class="bx bx-chevron-left"></i></a>
+                    <a class="page-link ajax-page-link" href="#!" data-page="{{ $items->currentPage() - 1 }}" rel="prev"><i
+                            class="bx bx-chevron-left"></i></a>
                 </li>
             @endif
 
@@ -26,7 +27,8 @@
             {{-- Next Page Link --}}
             @if ($items->hasMorePages())
                 <li class="page-item">
-                    <a class="page-link ajax-page-link" href="#!" data-page="{{ $items->currentPage() + 1 }}" rel="next"><i class="bx bx-chevron-left bx-rotate-180"></i></a>
+                    <a class="page-link ajax-page-link" href="#!" data-page="{{ $items->currentPage() + 1 }}" rel="next"><i
+                            class="bx bx-chevron-left bx-rotate-180"></i></a>
                 </li>
             @else
                 <li class="page-item disabled" aria-disabled="true">
