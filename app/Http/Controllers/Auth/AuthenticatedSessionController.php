@@ -28,8 +28,17 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request)
     {
-
         $request->authenticate();
+
+        if (Auth::user()->is_blocked) {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->back()->withErrors([
+                'email' => 'Your account has been blocked. Please contact the administrator.',
+            ]);
+        }
 
         $request->session()->regenerate();
 

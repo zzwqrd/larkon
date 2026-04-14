@@ -18,12 +18,19 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Reback',
-            'email' => 'test@example.com',
-            'email_verified_at' => now(),
-            'password' => Hash::make('password'),
-            'remember_token' => Str::random(10),
+        User::updateOrCreate(
+            ['email' => 'test@example.com'],
+            [
+                'name' => 'Reback',
+                'email_verified_at' => now(),
+                'password' => Hash::make('password'),
+                'remember_token' => Str::random(10),
+            ]
+        );
+
+        $this->call([
+            AdminSeeder::class,
+            ProductSeeder::class,
         ]);
     }
 }

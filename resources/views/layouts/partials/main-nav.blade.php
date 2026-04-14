@@ -31,6 +31,33 @@
                 </a>
             </li>
 
+            <!-- // Admin -->
+            <li class="nav-item">
+                <a class="nav-link menu-arrow" href="#sidebarAdmins" data-bs-toggle="collapse" role="button"
+                    aria-expanded="false" aria-controls="sidebarAdmins">
+                    <span class="nav-icon">
+                        <iconify-icon icon="solar:user-bold-duotone"></iconify-icon>
+                    </span>
+                    <span class="nav-text"> المشرفين </span>
+                </a>
+                <div class="collapse" id="sidebarAdmins">
+                    <ul class="nav sub-navbar-nav">
+                        <li class="sub-nav-item">
+                            <a class="sub-nav-link"
+                                href="{{ route('third', ['admin', 'admins', 'list'])}}">{{ __('messages.list') }}</a>
+                        </li>
+                        <li class="sub-nav-item">
+                            <a class="sub-nav-link"
+                                href="{{ route('third', ['admin', 'admins', 'edit'])}}">{{ __('messages.edit') }}</a>
+                        </li>
+                        <li class="sub-nav-item">
+                            <a class="sub-nav-link"
+                                href="{{ route('third', ['admin', 'admins', 'create'])}}">{{ __('messages.create') }}</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+
             <li class="nav-item">
                 <a class="nav-link menu-arrow" href="#sidebarProducts" data-bs-toggle="collapse" role="button"
                     aria-expanded="false" aria-controls="sidebarProducts">

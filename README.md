@@ -71,3 +71,5 @@ docker exec larkon-laravel.test-1 php artisan config:clear
 docker exec larkon-laravel.test-1 php artisan route:clear
 docker exec larkon-laravel.test-1 php artisan view:clear
 docker exec larkon-laravel.test-1 php artisan optimize:clear
+// seed
+docker exec larkon-laravel.test-1 php artisan db:seed
