@@ -1,30 +1,35 @@
-@extends('layouts.vertical', ['title' => __('messages.create_role'), 'sub_title' => __('messages.roles')])
+@extends('layouts.vertical', ['title' => __('messages.edit') . ' ' . __('messages.roles'), 'sub_title' => __('messages.roles')])
 
 @section('content')
 <div class="row">
     <div class="col-12">
-        <form action="{{ route('roles.store') }}" method="POST" id="roleForm">
+        <form action="{{ route('roles.update', $role->id) }}" method="POST" id="roleForm">
             @csrf
+            @method('PUT')
             <div class="card mb-4">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col-md-6">
-                            <h4 class="card-title mb-1">{{ __('messages.create_role') }}</h4>
-                            <p class="text-muted fs-13 mb-3">{{ __('messages.create_role_subtitle') }}</p>
+                            <h4 class="card-title mb-1">{{ __('messages.edit') }} {{ __('messages.roles') }}: {{ $role->name }}</h4>
+                            <p class="text-muted fs-13 mb-3">{{ __('messages.edit_role_subtitle') }}</p>
                             <div class="mb-0">
                                 <label for="roleName" class="form-label fw-bold">{{ __('messages.roles') }}</label>
-                                <input type="text" name="name" id="roleName" class="form-control form-control-lg" placeholder="e.g. Senior Manager" required>
+                                <input type="text" name="name" id="roleName" class="form-control form-control-lg" value="{{ $role->name }}" placeholder="e.g. Senior Manager" required>
                             </div>
                         </div>
                         <div class="col-md-6 text-md-end mt-3 mt-md-0">
                             <a href="{{ route('roles.index') }}" class="btn btn-light px-4 me-2">{{ __('messages.cancel') }}</a>
                             <button type="submit" class="btn btn-primary px-4 bg-gradient">
-                                <iconify-icon icon="solar:diskette-bold-duotone" class="align-middle me-1 fs-18"></iconify-icon> {{ __('messages.add') }} {{ __('messages.roles') }}
+                                <iconify-icon icon="solar:diskette-bold-duotone" class="align-middle me-1 fs-18"></iconify-icon> {{ __('messages.edit') }} {{ __('messages.roles') }}
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
+
+            @php
+                $allPermsChecked = true;
+            @endphp
 
             <div class="d-flex align-items-center justify-content-between mb-3">
                 <h5 class="text-uppercase fw-bold text-muted mb-0">
@@ -38,6 +43,11 @@
 
             <div class="row">
                 @foreach ($permissions as $group => $routes)
+                    @php
+                        $groupRouteNames = array_column($routes, 'name');
+                        $isGroupAllChecked = count(array_intersect($groupRouteNames, $rolePermissions)) === count($groupRouteNames);
+                        if (!$isGroupAllChecked) $allPermsChecked = false;
+                    @endphp
                     <div class="col-md-4 mb-4">
                         <div class="card h-100 border-0 shadow-sm overflow-hidden permission-card">
                             <div class="card-header bg-light-subtle d-flex justify-content-between align-items-center py-2 border-bottom">
@@ -48,7 +58,7 @@
                                     <h6 class="mb-0 fw-bold text-dark">{{ __('messages.' . strtolower($group)) == 'messages.' . strtolower($group) ? $group : __('messages.' . strtolower($group)) }}</h6>
                                 </div>
                                 <div class="form-check form-switch mb-0">
-                                    <input class="form-check-input check-all-group" type="checkbox" id="check_{{ $group }}">
+                                    <input class="form-check-input check-all-group" type="checkbox" id="check_{{ $group }}" {{ $isGroupAllChecked ? 'checked' : '' }}>
                                 </div>
                             </div>
                             <div class="card-body p-0">
@@ -62,7 +72,8 @@
                                             </div>
                                             <div class="form-check form-switch">
                                                 <input class="form-check-input perm-checkbox" type="checkbox" name="permissions[]" 
-                                                       value="{{ $route['name'] }}" id="perm_{{ str_replace('.', '_', $route['name']) }}">
+                                                       value="{{ $route['name'] }}" id="perm_{{ str_replace('.', '_', $route['name']) }}"
+                                                       {{ in_array($route['name'], $rolePermissions) ? 'checked' : '' }}>
                                             </div>
                                         </div>
                                     @endforeach
@@ -75,12 +86,19 @@
         </form>
     </div>
 </div>
+
+{{-- Pass the initial global state to JS --}}
+<input type="hidden" id="initialGlobalState" value="{{ $allPermsChecked ? '1' : '0' }}">
 @endsection
 
 @section('script-bottom')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const globalToggle = document.getElementById('globalCheckAll');
+        const initialGlobalState = document.getElementById('initialGlobalState').value;
+        
+        // Finalize initial state
+        if (initialGlobalState === '1') globalToggle.checked = true;
 
         // Function to update Group and Global switches based on checkboxes
         function updateSwitches() {
@@ -98,14 +116,14 @@
             globalToggle.checked = allGroupsChecked;
         }
 
-        // 1. Global Select All
+        // 1. Global Select All Click
         globalToggle.addEventListener('change', function() {
             document.querySelectorAll('.perm-checkbox, .check-all-group').forEach(cb => {
                 cb.checked = this.checked;
             });
         });
 
-        // 2. Group Select All
+        // 2. Group Select All Click
         document.querySelectorAll('.check-all-group').forEach(groupToggle => {
             groupToggle.addEventListener('change', function () {
                 const card = this.closest('.permission-card');
@@ -144,15 +162,15 @@
                 const result = await response.json();
                 if (result.success) {
                     Swal.fire({
-                        title: 'Success!',
-                        text: 'Role created successfully',
+                        title: 'Updated!',
+                        text: 'Role updated successfully',
                         icon: 'success',
                         customClass: { confirmButton: 'btn btn-primary' }
                     }).then(() => {
                         window.location.href = result.redirect;
                     });
                 } else {
-                    Swal.fire('Error', result.msg || 'Failed to save role', 'error');
+                    Swal.fire('Error', result.msg || 'Failed to update role', 'error');
                 }
             } catch (error) {
                 console.error(error);

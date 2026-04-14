@@ -24,29 +24,128 @@ Route::get('lang/{locale}', function ($locale) {
 require __DIR__ . '/auth.php';
 
 Route::group(['prefix' => '/', 'middleware' => ['auth', 'permission']], function () {
-    Route::get('', [RoutingController::class, 'index'])->name('root');
+    Route::get('', [
+        'uses' => RoutingController::class . '@index',
+        'as' => 'root',
+        'title' => ['messages.dashboard']
+    ]);
 
-    // Products module (Server-side dynamic routes)
-    Route::get('general/products/list', [\App\Http\Controllers\ProductController::class, 'index'])->name('products.index');
-    Route::delete('general/products/{id}', [\App\Http\Controllers\ProductController::class, 'destroy'])->name('products.destroy');
-    Route::post('general/products/bulk-delete', [\App\Http\Controllers\ProductController::class, 'bulkDelete'])->name('products.bulkDelete');
+    // Products module
+    Route::group(['prefix' => 'general/products', 'as' => 'products.'], function () {
+        Route::get('list', [
+            'uses' => \App\Http\Controllers\ProductController::class . '@index',
+            'as' => 'index',
+            'title' => ['messages.products_list']
+        ]);
+        Route::delete('{id}', [
+            'uses' => \App\Http\Controllers\ProductController::class . '@destroy',
+            'as' => 'destroy',
+            'title' => ['messages.delete_product']
+        ]);
+        Route::post('bulk-delete', [
+            'uses' => \App\Http\Controllers\ProductController::class . '@bulkDelete',
+            'as' => 'bulkDelete',
+            'title' => ['messages.bulk_delete_products']
+        ]);
+    });
 
     // Admins module
-    Route::get('admin/admins/list', [\App\Http\Controllers\Admin\AdminController::class, 'index'])->name('admins.list');
-    Route::get('admin/admins/create', [\App\Http\Controllers\Admin\AdminController::class, 'create'])->name('admins.create');
-    Route::post('admin/admins', [\App\Http\Controllers\Admin\AdminController::class, 'store'])->name('admins.store');
-    Route::get('admin/admins/{id}/edit', [\App\Http\Controllers\Admin\AdminController::class, 'edit'])->name('admins.edit');
-    Route::put('admin/admins/{id}', [\App\Http\Controllers\Admin\AdminController::class, 'update'])->name('admins.update');
-    Route::delete('admin/admins/{id}', [\App\Http\Controllers\Admin\AdminController::class, 'destroy'])->name('admins.destroy');
-    Route::post('admin/admins/bulk-delete', [\App\Http\Controllers\Admin\AdminController::class, 'bulkDelete'])->name('admins.bulkDelete');
+    Route::group(['prefix' => 'admin/admins', 'as' => 'admins.'], function () {
+        Route::get('list', [
+            'uses' => \App\Http\Controllers\Admin\AdminController::class . '@index',
+            'as' => 'list',
+            'title' => ['messages.admins_list']
+        ]);
+        Route::get('create', [
+            'uses' => \App\Http\Controllers\Admin\AdminController::class . '@create',
+            'as' => 'create',
+            'title' => ['messages.add_admin']
+        ]);
+        Route::post('/', [
+            'uses' => \App\Http\Controllers\Admin\AdminController::class . '@store',
+            'as' => 'store',
+            'title' => ['messages.save_admin']
+        ]);
+        Route::get('{id}/edit', [
+            'uses' => \App\Http\Controllers\Admin\AdminController::class . '@edit',
+            'as' => 'edit',
+            'title' => ['messages.edit_admin']
+        ]);
+        Route::put('{id}', [
+            'uses' => \App\Http\Controllers\Admin\AdminController::class . '@update',
+            'as' => 'update',
+            'title' => ['messages.update_admin']
+        ]);
+        Route::delete('{id}', [
+            'uses' => \App\Http\Controllers\Admin\AdminController::class . '@destroy',
+            'as' => 'destroy',
+            'title' => ['messages.delete_admin']
+        ]);
+        Route::post('bulk-delete', [
+            'uses' => \App\Http\Controllers\Admin\AdminController::class . '@bulkDelete',
+            'as' => 'bulkDelete',
+            'title' => ['messages.bulk_delete_admins']
+        ]);
+    });
 
-    // Roles module
-    Route::get('admin/roles/list', [\App\Http\Controllers\Admin\RoleController::class, 'index'])->name('roles.index');
-    Route::get('admin/roles/create', [\App\Http\Controllers\Admin\RoleController::class, 'create'])->name('roles.create');
-    Route::post('admin/roles', [\App\Http\Controllers\Admin\RoleController::class, 'store'])->name('roles.store');
-    Route::delete('admin/roles/{id}', [\App\Http\Controllers\Admin\RoleController::class, 'destroy'])->name('roles.destroy');
+    // Roles & Permissions
+    Route::group(['prefix' => 'admin/roles', 'as' => 'roles.'], function () {
+        Route::get('list', [
+            'uses' => \App\Http\Controllers\Admin\RoleController::class . '@index',
+            'as' => 'index',
+            'title' => ['messages.roles_list']
+        ]);
+        Route::get('create', [
+            'uses' => \App\Http\Controllers\Admin\RoleController::class . '@create',
+            'as' => 'create',
+            'title' => ['messages.create_role']
+        ]);
+        Route::post('/', [
+            'uses' => \App\Http\Controllers\Admin\RoleController::class . '@store',
+            'as' => 'store',
+            'title' => ['messages.save_role']
+        ]);
+        Route::get('{id}/edit', [
+            'uses' => \App\Http\Controllers\Admin\RoleController::class . '@edit',
+            'as' => 'edit',
+            'title' => ['messages.edit_role']
+        ]);
+        Route::put('{id}', [
+            'uses' => \App\Http\Controllers\Admin\RoleController::class . '@update',
+            'as' => 'update',
+            'title' => ['messages.update_role']
+        ]);
+        Route::delete('{id}', [
+            'uses' => \App\Http\Controllers\Admin\RoleController::class . '@destroy',
+            'as' => 'destroy',
+            'title' => ['messages.delete_role']
+        ]);
+        Route::post('bulk-delete', [
+            'uses' => \App\Http\Controllers\Admin\RoleController::class . '@bulkDelete',
+            'as' => 'bulkDelete',
+            'title' => ['messages.bulk_delete_roles']
+        ]);
+    });
 
-    Route::get('{first}/{second}/{third}', [RoutingController::class, 'thirdLevel'])->name('third');
-    Route::get('{first}/{second}', [RoutingController::class, 'secondLevel'])->name('second');
-    Route::get('{any}', [RoutingController::class, 'root'])->name('any');
+    Route::get('admin/permissions', [
+        'uses' => \App\Http\Controllers\Admin\RoleController::class . '@permissionsIndex',
+        'as' => 'permissions.index',
+        'title' => ['messages.permissions']
+    ]);
+
+    Route::get('{first}/{second}/{third}', [
+        'uses' => RoutingController::class . '@thirdLevel',
+        'as' => 'third',
+        'title' => ['messages.other_pages']
+    ]);
+    Route::get('{first}/{second}', [
+        'uses' => RoutingController::class . '@secondLevel',
+        'as' => 'second',
+        'title' => ['messages.other_pages']
+    ]);
+    Route::get('{any}', [
+        'uses' => RoutingController::class . '@root',
+        'as' => 'any',
+        'title' => ['messages.other_pages']
+    ]);
 });

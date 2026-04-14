@@ -38,24 +38,47 @@
                     <span class="nav-icon">
                         <iconify-icon icon="solar:user-bold-duotone"></iconify-icon>
                     </span>
-                    <span class="nav-text"> المشرفين </span>
+                    <span class="nav-text"> {{ __('messages.admins') }} </span>
                 </a>
                 <div class="collapse" id="sidebarAdmins">
                     <ul class="nav sub-navbar-nav">
                         <li class="sub-nav-item">
-                            <a class="sub-nav-link"
-                                href="{{ route('third', ['admin', 'admins', 'list'])}}">{{ __('messages.list') }}</a>
+                            <a class="sub-nav-link" href="{{ route('admins.list')}}">{{ __('messages.admins_list') }}</a>
                         </li>
                         <li class="sub-nav-item">
-                            <a class="sub-nav-link"
-                                href="{{ route('third', ['admin', 'admins', 'edit'])}}">{{ __('messages.edit') }}</a>
-                        </li>
-                        <li class="sub-nav-item">
-                            <a class="sub-nav-link"
-                                href="{{ route('third', ['admin', 'admins', 'create'])}}">{{ __('messages.create') }}</a>
+                            <a class="sub-nav-link" href="{{ route('admins.create')}}">{{ __('messages.add_admin') }}</a>
                         </li>
                     </ul>
                 </div>
+            </li>
+            <!-- Roles Sub-Menu -->
+            <li class="nav-item">
+                <a class="nav-link menu-arrow" href="#sidebarRolesNested" data-bs-toggle="collapse" role="button"
+                    aria-expanded="false" aria-controls="sidebarRolesNested">
+                    <span class="nav-icon">
+                        <iconify-icon icon="solar:user-speak-rounded-bold-duotone"></iconify-icon>
+                    </span>
+                    <span class="nav-text"> {{ __('messages.roles') }} </span>
+                </a>
+                <div class="collapse" id="sidebarRolesNested">
+                    <ul class="nav sub-navbar-nav">
+                        <li class="sub-nav-item">
+                            <a class="sub-nav-link" href="{{ route('roles.index') }}">{{ __('messages.roles_list') }}</a>
+                        </li>
+                        <li class="sub-nav-item">
+                            <a class="sub-nav-link" href="{{ route('roles.create') }}">{{ __('messages.create_role') }}</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('permissions.index') }}">
+                    <span class="nav-icon">
+                        <iconify-icon icon="solar:shield-keyhole-bold-duotone"></iconify-icon>
+                    </span>
+                    <span class="nav-text"> {{ __('messages.permissions') }} </span>
+                </a>
             </li>
 
             <li class="nav-item">
