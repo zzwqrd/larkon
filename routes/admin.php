@@ -1,7 +1,11 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\RoutingController;
+use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\NewPasswordController;
@@ -9,10 +13,6 @@ use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\ConfirmablePasswordController;
-use App\Http\Controllers\RoutingController;
-use App\Http\Controllers\Admin\AdminController;
-use App\Http\Controllers\Admin\RoleController;
-use App\Http\Controllers\ProductController;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,8 +20,20 @@ use App\Http\Controllers\ProductController;
 |--------------------------------------------------------------------------
 */
 
-// --- Public Auth Routes ---
-Route::group(['middleware' => 'guest'], function () {
+// --- Public Dashboard Auth ---
+Route::group(['middleware' => 'guest:admin', 'prefix' => 'admin'], function () {
+
+    Route::get('login', [
+        'uses' => AuthController::class . '@showLogin',
+        'as' => 'admin.show.login',
+        'title' => ['messages.sign_in']
+    ]);
+
+    Route::post('login', [
+        'uses' => AuthController::class . '@login',
+        'as' => 'admin.login'
+    ]);
+
     Route::get('/register', [
         'uses' => RegisteredUserController::class . '@create',
         'as' => 'register',
@@ -29,15 +41,6 @@ Route::group(['middleware' => 'guest'], function () {
     ]);
     Route::post('/register', [
         'uses' => RegisteredUserController::class . '@store'
-    ]);
-
-    Route::get('/login', [
-        'uses' => AuthenticatedSessionController::class . '@create',
-        'as' => 'login',
-        'title' => ['messages.sign_in']
-    ]);
-    Route::post('/login', [
-        'uses' => AuthenticatedSessionController::class . '@store'
     ]);
 
     Route::get('/forgot-password', [
@@ -64,7 +67,7 @@ Route::group(['middleware' => 'guest'], function () {
 });
 
 // --- Protected Admin Routes ---
-Route::group(['middleware' => ['auth', 'permission']], function () {
+Route::group(['middleware' => ['auth:admin', 'admin.auth', 'permission']], function () {
 
     // Dashboard
     Route::get('/', [
@@ -75,11 +78,17 @@ Route::group(['middleware' => ['auth', 'permission']], function () {
         'master' => true
     ]);
 
-    // Logout
-    Route::post('/logout', [
-        'uses' => AuthenticatedSessionController::class . '@destroy',
-        'as' => 'logout',
+    // Auth Utilities
+    Route::get('admin/logout', [
+        'uses' => AuthController::class . '@logout',
+        'as' => 'admin.logout',
         'title' => ['messages.logout']
+    ]);
+
+    Route::get('admin/change-lang/{lang}', [
+        'uses' => AuthController::class . '@changeLnag',
+        'as' => 'admin.changeLang',
+        'title' => ['messages.language']
     ]);
 
     // Verification & Security
@@ -153,6 +162,11 @@ Route::group(['middleware' => ['auth', 'permission']], function () {
         'as' => 'permissions.index',
         'title' => ['messages.permissions'],
         'icon' => 'solar:shield-keyhole-bold-duotone'
+    ]);
+
+    Route::post('admin/permissions/update-roles', [
+        'uses' => RoleController::class . '@updatePermissionRoles',
+        'as' => 'admin.permissions.update-roles'
     ]);
 
     // Products Module

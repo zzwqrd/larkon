@@ -187,12 +187,12 @@
                     <a type="button" class="topbar-button" id="page-header-user-dropdown" data-bs-toggle="dropdown"
                         aria-haspopup="true" aria-expanded="false">
                         <span class="d-flex align-items-center">
-                            <img class="rounded-circle" width="32" src="/images/users/avatar-1.jpg" alt="avatar-3">
+                            <img class="rounded-circle" width="32" src="{{ auth('admin')->user()->avatar ?? '/images/users/avatar-1.jpg' }}" alt="avatar-admin">
                         </span>
                     </a>
                     <div class="dropdown-menu dropdown-menu-end">
                         <!-- item-->
-                        <h6 class="dropdown-header">{{ __('messages.welcome') }}!</h6>
+                        <h6 class="dropdown-header">{{ __('messages.welcome') }} {{ auth('admin')->user()->name }}!</h6>
                         <a class="dropdown-item" href="{{ route('second', ['users', 'pages-profile'])}}">
                             <i class="bx bx-user-circle text-muted fs-18 align-middle me-1"></i><span
                                 class="align-middle">{{ __('messages.profile') }}</span>
@@ -217,7 +217,7 @@
 
                         <div class="dropdown-divider my-1"></div>
 
-                        <a class="dropdown-item text-danger" href="{{ route('second', ['auth', 'login']) }}">
+                        <a class="dropdown-item text-danger" href="{{ route('admin.logout') }}">
                             <i class="bx bx-log-out fs-18 align-middle me-1"></i><span
                                 class="align-middle">{{ __('messages.logout') }}</span>
                         </a>

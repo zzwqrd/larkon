@@ -176,7 +176,10 @@ class RoleController extends Controller
             ]);
         }
 
-        return view('admin.permissions.index', ['permissions' => $paginatedPermissions]);
+        return view('admin.permissions.index', [
+            'permissions' => $paginatedPermissions,
+            'allRoles' => $allRoles
+        ]);
     }
 
     /**
@@ -236,6 +239,7 @@ class RoleController extends Controller
         if ($role->id == 1) {
             return response()->json(['success' => false, 'msg' => 'Super Admin role is protected and cannot be deleted.'], 403);
         }
+        $role->permissions()->delete(); // Clear related permissions first
         $role->delete();
         return response()->json(['success' => true, 'id' => $id]);
     }
@@ -248,9 +252,42 @@ class RoleController extends Controller
         $ids = $request->input('ids', []);
         if (!empty($ids)) {
             // Strictly protect ID 1
-            Role::whereIn('id', $ids)->where('id', '!=', 1)->delete();
+            $roles = Role::whereIn('id', $ids)->where('id', '!=', 1)->get();
+            foreach ($roles as $role) {
+                $role->permissions()->delete();
+                $role->delete();
+            }
         }
 
         return response()->json(['success' => true]);
+    }
+    /**
+     * Update roles for a specific permission (route name).
+     */
+    public function updatePermissionRoles(Request $request)
+    {
+        $request->validate([
+            'permission' => 'required|string',
+            'roles' => 'array'
+        ]);
+
+        $permissionName = $request->permission;
+        $roleIds = $request->input('roles', []);
+
+        // Remove existing assignments for this specific permission
+        Permission::where('permission', $permissionName)->delete();
+
+        // Add new assignments
+        foreach ($roleIds as $roleId) {
+            Permission::create([
+                'role_id' => $roleId,
+                'permission' => $permissionName
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Roles updated successfully for permission: ' . $permissionName
+        ]);
     }
 }

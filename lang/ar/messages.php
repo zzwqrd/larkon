@@ -153,4 +153,8 @@ return [
     'edit_role_subtitle' => 'تعديل اسم الرتبة وضبط الصلاحيات الأمنية المرتبطة بها.',
     'create_role_subtitle' => 'أدخل اسم الرتبة وحدد الصلاحيات الأمنية اللازمة لها.',
     'select_all_permissions' => 'تحديد كل الصلاحيات',
+    'manage_roles' => 'إدارة الرتب',
+    'assign_to_roles' => 'إسناد إلى رتب',
+    'permission' => 'الصلاحية',
+    'save_changes' => 'حفظ التغييرات',
 ];

@@ -138,4 +138,8 @@ return [
     'edit_role_subtitle' => 'Modify the role name and adjust security permissions for this role.',
     'create_role_subtitle' => 'Enter role name and specify security permissions.',
     'select_all_permissions' => 'Select All Permissions',
+    'manage_roles' => 'Manage Roles',
+    'assign_to_roles' => 'Assign to Roles',
+    'permission' => 'Permission',
+    'save_changes' => 'Save Changes',
 ];

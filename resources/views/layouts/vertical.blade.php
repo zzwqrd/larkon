@@ -45,12 +45,9 @@
 
     </div>
 
-    @include("layouts.partials/right-sidebar")
-    @include("layouts.partials/footer-scripts")
-    {{-- Techzaa app bundle (per request) --}}
-
     <!-- Vendor Javascript (Require in all Page) -->
     <script src="{{ asset('js/vendor.js') }}"></script>
+    @include("layouts.partials/footer-scripts")
     <script>
         // Prevent Dropzone from auto-discovering so that page-specific Vite scripts can initialize it
         if (window.Dropzone) {

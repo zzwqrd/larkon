@@ -142,17 +142,32 @@
                 });
                 
                 const result = await response.json();
-                if (result.success) {
-                    Swal.fire({
-                        title: 'Success!',
-                        text: 'Role created successfully',
-                        icon: 'success',
-                        customClass: { confirmButton: 'btn btn-primary' }
-                    }).then(() => {
-                        window.location.href = result.redirect;
-                    });
+                if (response.ok) {
+                    if (result.success) {
+                        Swal.fire({
+                            title: 'Success!',
+                            text: 'Role created successfully',
+                            icon: 'success',
+                            customClass: { confirmButton: 'btn btn-primary' }
+                        }).then(() => {
+                            window.location.href = result.redirect;
+                        });
+                    } else {
+                        Swal.fire('Error', result.msg || 'Failed to save role', 'error');
+                    }
+                } else if (response.status === 422) {
+                    // Handle Laravel Validation Errors
+                    let errorMessages = '';
+                    if (result.errors) {
+                        for (const field in result.errors) {
+                            errorMessages += result.errors[field][0] + '<br>';
+                        }
+                    } else if (result.message) {
+                        errorMessages = result.message;
+                    }
+                    Swal.fire('Validation Error', errorMessages || 'Please check your inputs.', 'warning');
                 } else {
-                    Swal.fire('Error', result.msg || 'Failed to save role', 'error');
+                    Swal.fire('Error', result.msg || result.message || 'Failed to save role', 'error');
                 }
             } catch (error) {
                 console.error(error);

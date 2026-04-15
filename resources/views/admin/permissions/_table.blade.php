@@ -42,8 +42,8 @@
                     </td>
                     <td>
                         <div class="d-flex gap-2">
-                            <a href="#!" class="btn btn-light btn-sm" title="Security Audit"><iconify-icon
-                                    icon="solar:shield-warning-bold" class="align-middle fs-16"></iconify-icon></a>
+                            <x-ui.manage-button :permission="$perm['name']" :title="$perm['title']"
+                                :assigned="$perm['assigned_to']" />
                         </div>
                     </td>
                 </tr>
