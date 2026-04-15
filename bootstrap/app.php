@@ -26,10 +26,8 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->redirectTo(
             guests: function ($request) {
-                if ($request->is('admin/*') || $request->is('admin')) {
-                    return route('admin.show.login');
-                }
-                return route('login');
+                // If unauthorized and not Ajax, redirect to the admin login page
+                return route('admin.show.login');
             }
         );
     })

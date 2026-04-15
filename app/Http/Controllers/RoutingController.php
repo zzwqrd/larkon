@@ -26,10 +26,10 @@ class RoutingController extends BaseController
      */
     public function index(Request $request)
     {
-        if (Auth::user()) {
+        if (Auth::guard('admin')->check()) {
             return redirect('/dashboards/index');
         } else {
-            return redirect('login');
+            return redirect('admin/login');
         }
     }
 
@@ -38,8 +38,10 @@ class RoutingController extends BaseController
      *
      * @return \Illuminate\Http\Response
      */
-    public function root(Request $request, $first)
+    public function root(Request $request, $first = null)
     {
+        if (!$first)
+            return $this->index($request);
         if (view()->exists($first)) {
             return view($first);
         }
@@ -49,8 +51,10 @@ class RoutingController extends BaseController
     /**
      * second level route
      */
-    public function secondLevel(Request $request, $first, $second)
+    public function secondLevel(Request $request, $first = null, $second = null)
     {
+        if (!$first || !$second)
+            return $this->index($request);
         $view = $first . '.' . $second;
         if (view()->exists($view)) {
             return view($view);
@@ -61,8 +65,10 @@ class RoutingController extends BaseController
     /**
      * third level route
      */
-    public function thirdLevel(Request $request, $first, $second, $third)
+    public function thirdLevel(Request $request, $first = null, $second = null, $third = null)
     {
+        if (!$first || !$second || !$third)
+            return $this->index($request);
         $view = $first . '.' . $second . '.' . $third;
         if (view()->exists($view)) {
             return view($view);
@@ -70,3 +76,4 @@ class RoutingController extends BaseController
         return $this->index($request);
     }
 }
+

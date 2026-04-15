@@ -18,7 +18,12 @@
             <tr>
                 <td>
                     <div class="form-check ms-1">
-                        <input type="checkbox" class="form-check-input product-checkbox" value="{{ $admin->id }}">
+                        @if($admin->role_id == 1)
+                            <iconify-icon icon="solar:lock-bold-duotone" class="text-warning fs-18"
+                                title="System Protected"></iconify-icon>
+                        @else
+                            <input type="checkbox" class="form-check-input product-checkbox" value="{{ $admin->id }}">
+                        @endif
                     </div>
                 </td>
                 <td>
@@ -44,8 +49,12 @@
                 </td>
                 <td>
                     <div class="d-flex gap-2">
+
+
                         <x-ui.edit-button :route="route('admins.edit', $admin->id)" />
-                        <x-ui.delete-button :id="$admin->id" :route="route('admins.destroy', $admin->id)" />
+                        @if($admin->role_id != 1)
+                            <x-ui.delete-button :id="$admin->id" :route="route('admins.destroy', $admin->id)" />
+                        @endif
                     </div>
                 </td>
             </tr>

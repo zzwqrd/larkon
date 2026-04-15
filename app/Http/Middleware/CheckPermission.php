@@ -19,15 +19,22 @@ class CheckPermission
             // 1. Get the current route name
             $routeName = $request->route()->getName();
 
-            // 2. Allow specific routes that don't need permission 
-            $allowedRoutes = ['root', 'lang', 'logout', 'any', 'admin.show.login', 'admin.login', 'admin.logout', 'admin.changeLang'];
+            // 2. Allow specific white-listed routes
+            $allowedRoutes = [
+                'admin.show.login', 
+                'admin.login', 
+                'admin.logout', 
+                'admin.changeLang',
+                'admin.dashboard.index', // Dashboard is usually allowed for all logged-in admins
+                'root'
+            ];
+            
             if (in_array($routeName, $allowedRoutes)) {
                 return $next($request);
             }
 
-            // 3. Get the authenticated admin via the explicit admin guard
+            // 3. Get the authenticated admin
             $admin = auth()->guard('admin')->user();
-
             if (!$admin) {
                 return $this->handleUnauthorized($request);
             }
@@ -37,16 +44,16 @@ class CheckPermission
                 return $next($request);
             }
 
-            // 5. Check if user has the specific permission dynamically
+            // 5. Check permissions
             if ($admin->role) {
                 $permissions = $admin->role->permissions->pluck('permission')->toArray();
                 
-                // If they have no permissions, log them out for safety
+                // If they have no permissions, log them out
                 if (empty($permissions)) {
                     auth()->guard('admin')->logout();
                     $request->session()->invalidate();
                     $request->session()->regenerateToken();
-                    return redirect()->route('admin.show.login')->withErrors(['email' => __('messages.no_permissions')]);
+                    return redirect()->route('admin.show.login')->withErrors(['email' => __('admin.no_permissions')]);
                 }
 
                 if (in_array($routeName, $permissions)) {
@@ -55,29 +62,32 @@ class CheckPermission
             }
 
         } catch (\Exception $e) {
-            // Safe fallback if DB is down during permission check
+            // Safe fallback
             if ($request->ajax()) {
-                return response()->json(['success' => false, 'msg' => 'Database Connection Error'], 500);
+                return response()->json(['success' => false, 'msg' => 'Security check failure'], 500);
             }
-            return redirect()->back()->with(['danger' => 'Database Connection Error. Please try again.']);
+            return redirect()->back()->with(['danger' => 'System security encounter error.']);
         }
 
-        // 6. Forbidden if no permission
+        // 6. Handle Unauthorized (Redirect to Dashboard with message)
         return $this->handleUnauthorized($request);
     }
 
     /**
-     * Centralized response handler for unauthorized access
+     * Professional unauthorized handler – Mirroring perfume_admin logic
      */
     protected function handleUnauthorized(Request $request)
     {
+        $message = __('admin.dosenot_hav_permission');
+
         if ($request->ajax()) {
             return response()->json([
                 'success' => false, 
-                'msg' => __('messages.unauthorized_access') ?? 'Unauthorized Access'
+                'msg' => $message
             ], 403);
         }
 
-        abort(403, 'You do not have permission to access this page.');
+        // Redirect to dashboard instead of abort(403)
+        return redirect()->route('admin.dashboard.index')->with(['danger' => $message]);
     }
 }
