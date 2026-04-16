@@ -59,7 +59,7 @@ class RoleController extends Controller
                 $role->permissions()->create(['permission' => $perm]);
             }
 
-            return response()->json(['success' => true, 'redirect' => route('roles.index')]);
+            return response()->json(['success' => true, 'redirect' => route('admin.roles.index')]);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'msg' => $e->getMessage()], 500);
         }
@@ -109,7 +109,7 @@ class RoleController extends Controller
                 }
             }
 
-            return response()->json(['success' => true, 'redirect' => route('roles.index')]);
+            return response()->json(['success' => true, 'redirect' => route('admin.roles.index')]);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'msg' => $e->getMessage()], 500);
         }
@@ -190,43 +190,150 @@ class RoleController extends Controller
         $routesArr = Route::getRoutes();
         $groups = [];
 
+        // Routes to completely skip (system/internal)
+        $skipRoutes = [
+            'admin.root', 'admin.logout', 'admin.changeLang',
+            'admin.show.login', 'admin.login',
+            'third', 'second', 'any',
+        ];
+
+        // Routes that should be grouped under "Authentication"
+        $authRoutes = [
+            'login', 'register', 'password.request', 'password.email',
+            'password.reset', 'password.update',
+        ];
+
+        // Action labels map for generating fallback titles
+        $actionLabels = [
+            'store'      => 'messages.create',
+            'edit'       => 'messages.edit',
+            'update'     => 'messages.edit',
+            'destroy'    => 'messages.delete',
+            'toggle'     => 'messages.toggle',
+            'bulkDelete' => 'messages.bulk_delete',
+            'index'      => 'messages.list',
+            'create'     => 'messages.create',
+            'show'       => 'messages.details',
+            'approve'    => 'messages.active',
+            'reject'     => 'messages.cancel',
+            'updateStatus' => 'messages.status',
+        ];
+
         foreach ($routesArr as $route) {
             $name = $route->getName();
-            
-            // Filter system routes
-            if ($name && !str_starts_with($name, '_') && !str_starts_with($name, 'ignition') && !str_starts_with($name, 'sanctum') && !str_starts_with($name, 'debugbar')) {
+            if (!$name) continue;
 
-                // Determine Group Name
-                $groupName = 'General';
-                $segments = explode('.', $name);
-                
-                // If it's a module route (e.g. admins.list or roles.index)
-                if (count($segments) > 1) {
-                    $groupName = $segments[0];
-                }
-
-                // If it's a core auth route (login, register), group as Authentication
-                if (in_array($name, ['login', 'register', 'logout', 'password.request', 'password.reset'])) {
-                    $groupName = 'Authentication';
-                }
-
-                $displayGroup = ucfirst($groupName);
-
-                $titleArr = $route->getAction('title');
-                $title = isset($titleArr[0]) ? __($titleArr[0]) : ucwords(str_replace(['.', '-', '_'], ' ', $name));
-
-                // We want to list all permissions but categorize them nicely
-                $groups[$displayGroup][] = [
-                    'name' => $name,
-                    'title' => $title,
-                    'is_master' => $route->getAction('master') ?? false
-                ];
+            // Filter framework routes
+            if (str_starts_with($name, '_') || str_starts_with($name, 'ignition')
+                || str_starts_with($name, 'sanctum') || str_starts_with($name, 'debugbar')) {
+                continue;
             }
+
+            // Skip system/internal routes
+            if (in_array($name, $skipRoutes)) continue;
+
+            // Skip menu-only parent routes (they have type=parent and no real controller action)
+            $actions = $route->getAction();
+            if (isset($actions['type']) && $actions['type'] === 'parent') continue;
+
+            // --- Determine Group Name ---
+            $groupKey = 'general';
+
+            if (in_array($name, $authRoutes)) {
+                $groupKey = 'authentication';
+            } else {
+                $segments = explode('.', $name);
+
+                // Strip 'admin.' prefix
+                if ($segments[0] === 'admin' && count($segments) > 1) {
+                    $routePrefix = $segments[1];
+                } elseif (count($segments) > 1) {
+                    $routePrefix = $segments[0];
+                } else {
+                    $routePrefix = $segments[0];
+                }
+
+                // Map sub-modules to major parent groups
+                $parentGroupsMap = [
+                    // Products
+                    'category'       => 'products',
+                    'brands'         => 'products',
+                    'sizes'          => 'products',
+                    'notes'          => 'products',
+                    'products'       => 'products',
+                    // Manufacturing
+                    'formulas'       => 'manufacturing',
+                    'essential_oils' => 'manufacturing',
+                    'oil_categories' => 'manufacturing',
+                    // Logistics
+                    'shipping'       => 'logistics',
+                    'returns'        => 'logistics',
+                    // Others
+                    'customers'      => 'users',
+                    'sellers'        => 'users',
+                    'admins'         => 'admins',
+                    'roles'          => 'roles',
+                    'orders'         => 'orders',
+                    'inventory'      => 'inventory',
+                    'coupons'        => 'coupons',
+                    'reviews'        => 'reviews',
+                ];
+
+                // Normalize prefix
+                $routePrefix = str_replace('-', '_', strtolower($routePrefix));
+                
+                // Determine the major group
+                $groupKey = $parentGroupsMap[$routePrefix] ?? $routePrefix;
+            }
+
+            // Normalize final group key
+            $groupKey = str_replace('-', '_', strtolower($groupKey));
+
+            // Translate the display group using the mapped group key
+            $displayGroup = __('messages.' . $groupKey);
+            if ($displayGroup === 'messages.' . $groupKey) {
+                $displayGroup = ucfirst(str_replace('_', ' ', $groupKey));
+            }
+
+            // Translate the specific sub-module name (e.g. Brands, Sizes) for appending to label
+            $subModuleTranslation = __('messages.' . $routePrefix);
+            if ($subModuleTranslation === 'messages.' . $routePrefix) {
+                $subModuleTranslation = ucfirst(str_replace('_', ' ', $routePrefix));
+            }
+
+            // --- Determine Permission Title ---
+            $titleArr = $route->getAction('title');
+            if (isset($titleArr[0])) {
+                $baseTitle = __($titleArr[0]);
+            } else {
+                // Smart fallback: extract action from route name and translate it
+                $segments = explode('.', $name);
+                $actionKey = end($segments);
+
+                if (isset($actionLabels[$actionKey])) {
+                    $baseTitle = __($actionLabels[$actionKey]);
+                } else {
+                    $baseTitle = ucwords(str_replace(['.', '-', '_'], ' ', $actionKey));
+                }
+            }
+
+            // If we mapped multiple sub-modules into one group, we should append the sub-module name
+            // so the checkboxes are distinguishable (e.g. "Create" -> "Create Sizes")
+            // Exception: When sub-module is exactly the major group (e.g. products -> products)
+            $title = $baseTitle;
+            if ($routePrefix !== $groupKey) {
+                $title = $baseTitle . ' - ' . $subModuleTranslation;
+            }
+
+            $groups[$displayGroup][] = [
+                'name' => $name,
+                'title' => $title,
+                'is_master' => $route->getAction('master') ?? false
+            ];
+
         }
 
-        // Sort groups to make it look professional
         ksort($groups);
-
         return $groups;
     }
 

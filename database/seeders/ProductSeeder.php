@@ -13,7 +13,9 @@ class ProductSeeder extends Seeder
     public function run(): void
     {
         // Clear existing products to prevent duplicates
+        \Illuminate\Support\Facades\Schema::disableForeignKeyConstraints();
         Product::truncate();
+        \Illuminate\Support\Facades\Schema::enableForeignKeyConstraints();
 
         $products = [
             [

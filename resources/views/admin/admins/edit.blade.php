@@ -5,7 +5,7 @@
 @endsection
 
 @section('content')
-    <form action="{{ route('admins.update', $admin->id) }}" method="POST" id="adminForm" enctype="multipart/form-data">
+    <form action="{{ route('admin.admins.update', $admin->id) }}" method="POST" id="adminForm" enctype="multipart/form-data">
         @csrf
         @method('PUT')
         <div class="row">
@@ -113,7 +113,7 @@
                 </div>
 
                 <div class="p-3 bg-light mb-3 rounded d-flex justify-content-end gap-2">
-                    <a href="{{ route('admins.list') }}" class="btn btn-outline-secondary px-4">Cancel</a>
+                    <a href="{{ route('admin.admins.list') }}" class="btn btn-outline-secondary px-4">Cancel</a>
                     <button type="submit" class="btn btn-primary px-4">Update Admin</button>
                 </div>
             </div>

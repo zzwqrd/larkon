@@ -82,7 +82,7 @@
 
     <div class="row">
         <div class="col-xl-12">
-            <x-ui.table-card :title="__('messages.comprehensive_permissions')" :indexRoute="route('permissions.index')">
+            <x-ui.table-card :title="__('messages.comprehensive_permissions')" :indexRoute="route('admin.permissions.index')">
                 <div id="table_content_append">
                     @include('admin.permissions._table', ['permissions' => $permissions])
                 </div>

@@ -18,7 +18,7 @@
             <tr>
                 <td>
                     <div class="form-check ms-1">
-                        @if($admin->role_id == 1)
+                        @if($admin->id == 1)
                             <iconify-icon icon="solar:lock-bold-duotone" class="text-warning fs-18"
                                 title="System Protected"></iconify-icon>
                         @else
@@ -51,9 +51,9 @@
                     <div class="d-flex gap-2">
 
 
-                        <x-ui.edit-button :route="route('admins.edit', $admin->id)" />
-                        @if($admin->role_id != 1)
-                            <x-ui.delete-button :id="$admin->id" :route="route('admins.destroy', $admin->id)" />
+                        <x-ui.edit-button :route="route('admin.admins.edit', $admin->id)" />
+                        @if($admin->id != 1)
+                            <x-ui.delete-button :id="$admin->id" :route="route('admin.admins.destroy', $admin->id)" />
                         @endif
                     </div>
                 </td>

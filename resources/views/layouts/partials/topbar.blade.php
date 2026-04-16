@@ -36,11 +36,11 @@
                         @endif
                     </button>
                     <div class="dropdown-menu dropdown-menu-end">
-                        <a href="{{ route('lang', 'en') }}" class="dropdown-item">
+                        <a href="{{ route('admin.changeLang', 'en') }}" class="dropdown-item">
                             <iconify-icon icon="circle-flags:us" class="fs-18 align-middle me-1"></iconify-icon>
                             <span class="align-middle">English</span>
                         </a>
-                        <a href="{{ route('lang', 'ar') }}" class="dropdown-item">
+                        <a href="{{ route('admin.changeLang', 'ar') }}" class="dropdown-item">
                             <iconify-icon icon="circle-flags:sa" class="fs-18 align-middle me-1"></iconify-icon>
                             <span class="align-middle">العربية</span>
                         </a>

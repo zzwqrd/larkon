@@ -20,7 +20,6 @@
     <div class="scrollbar" data-simplebar>
         <ul class="navbar-nav" id="navbar-nav">
 
-            <li class="menu-title">{{ __('messages.general') }}</li>
 
             {!! \App\Traits\SideBarTrait::sidebarButtons() !!}
 

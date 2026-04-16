@@ -26,10 +26,10 @@ class RoutingController extends BaseController
      */
     public function index(Request $request)
     {
-        if (Auth::guard('admin')->check()) {
-            return redirect('/dashboards/index');
+        if (auth()->guard('admin')->check()) {
+            return redirect()->route('admin.dashboard.index');
         } else {
-            return redirect('admin/login');
+            return redirect()->route('admin.show.login');
         }
     }
 

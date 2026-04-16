@@ -4,8 +4,8 @@
     <div class="row">
         <div class="col-xl-12">
             <x-ui.table-card title="All Product List" :addRoute="route('third', ['general', 'products', 'create'])"
-                :indexRoute="route('products.index')" :deleteRoute="url('general/products')"
-                :deleteAllRoute="route('products.bulkDelete')">
+                :indexRoute="route('admin.products.index')" :deleteRoute="url('general/products')"
+                :deleteAllRoute="route('admin.products.bulkDelete')">
                 <div id="table_content_append">
                     {{-- AJAX will load the _table.blade.php content here --}}
                     <div class="text-center py-5">

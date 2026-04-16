@@ -3,7 +3,7 @@
 @section('content')
 <div class="row">
     <div class="col-12">
-        <form action="{{ route('roles.update', $role->id) }}" method="POST" id="roleForm">
+        <form action="{{ route('admin.roles.update', $role->id) }}" method="POST" id="roleForm">
             @csrf
             @method('PUT')
             <div class="card mb-4">
@@ -18,7 +18,7 @@
                             </div>
                         </div>
                         <div class="col-md-6 text-md-end mt-3 mt-md-0">
-                            <a href="{{ route('roles.index') }}" class="btn btn-light px-4 me-2">{{ __('messages.cancel') }}</a>
+                            <a href="{{ route('admin.roles.index') }}" class="btn btn-light px-4 me-2">{{ __('messages.cancel') }}</a>
                             <button type="submit" class="btn btn-primary px-4 bg-gradient">
                                 <iconify-icon icon="solar:diskette-bold-duotone" class="align-middle me-1 fs-18"></iconify-icon> {{ __('messages.edit') }} {{ __('messages.roles') }}
                             </button>
@@ -55,10 +55,10 @@
                                     <div class="avatar-sm bg-primary bg-opacity-10 rounded d-flex align-items-center justify-content-center" style="width: 30px; height: 30px;">
                                         <iconify-icon icon="solar:folder-with-files-bold-duotone" class="fs-16 text-primary"></iconify-icon>
                                     </div>
-                                    <h6 class="mb-0 fw-bold text-dark">{{ __('messages.' . strtolower($group)) == 'messages.' . strtolower($group) ? $group : __('messages.' . strtolower($group)) }}</h6>
+                                    <h6 class="mb-0 fw-bold text-dark">{{ $group }}</h6>
                                 </div>
                                 <div class="form-check form-switch mb-0">
-                                    <input class="form-check-input check-all-group" type="checkbox" id="check_{{ $group }}" {{ $isGroupAllChecked ? 'checked' : '' }}>
+                                    <input class="form-check-input check-all-group" type="checkbox" id="check_{{ md5($group) }}" {{ $isGroupAllChecked ? 'checked' : '' }}>
                                 </div>
                             </div>
                             <div class="card-body p-0">

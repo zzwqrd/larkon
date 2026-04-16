@@ -5,10 +5,10 @@
         <div class="col-xl-12">
             <x-ui.table-card 
                 :title="__('messages.roles_list')" 
-                :addRoute="route('roles.create')"
-                :indexRoute="route('roles.index')"
+                :addRoute="route('admin.roles.create')"
+                :indexRoute="route('admin.roles.index')"
                 :deleteRoute="url('admin/roles')"
-                :deleteAllRoute="route('roles.bulkDelete')"
+                :deleteAllRoute="route('admin.roles.bulkDelete')"
             >
                 <div id="table_content_append">
                     {{-- AJAX will load the _table.blade.php content here --}}

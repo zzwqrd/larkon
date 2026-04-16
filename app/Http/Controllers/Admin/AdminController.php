@@ -76,7 +76,7 @@ class AdminController extends Controller
 
             Admin::create($data);
 
-            return response()->json(['success' => true, 'redirect' => route('admins.list')]);
+            return response()->json(['success' => true, 'redirect' => route('admin.admins.list')]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['success' => false, 'msg' => collect($e->errors())->flatten()->first()], 422);
         } catch (\Exception $e) {
@@ -141,7 +141,7 @@ class AdminController extends Controller
 
             $admin->update($data);
 
-            return response()->json(['success' => true, 'redirect' => route('admins.list')]);
+            return response()->json(['success' => true, 'redirect' => route('admin.admins.list')]);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['success' => false, 'msg' => collect($e->errors())->flatten()->first()], 422);

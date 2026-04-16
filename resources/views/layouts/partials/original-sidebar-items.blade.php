@@ -23,11 +23,11 @@
                     <ul class="nav sub-navbar-nav">
                         <li class="sub-nav-item">
                             <a class="sub-nav-link"
-                                href="{{ route('admins.list')}}">{{ __('messages.admins_list') }}</a>
+                                href="{{ route('admin.admins.list')}}">{{ __('messages.admins_list') }}</a>
                         </li>
                         <li class="sub-nav-item">
                             <a class="sub-nav-link"
-                                href="{{ route('admins.create')}}">{{ __('messages.add_admin') }}</a>
+                                href="{{ route('admin.admins.create')}}">{{ __('messages.add_admin') }}</a>
                         </li>
                     </ul>
                 </div>
@@ -45,18 +45,18 @@
                     <ul class="nav sub-navbar-nav">
                         <li class="sub-nav-item">
                             <a class="sub-nav-link"
-                                href="{{ route('roles.index') }}">{{ __('messages.roles_list') }}</a>
+                                href="{{ route('admin.roles.index') }}">{{ __('messages.roles_list') }}</a>
                         </li>
                         <li class="sub-nav-item">
                             <a class="sub-nav-link"
-                                href="{{ route('roles.create') }}">{{ __('messages.create_role') }}</a>
+                                href="{{ route('admin.roles.create') }}">{{ __('messages.create_role') }}</a>
                         </li>
                     </ul>
                 </div>
             </li>
 
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('permissions.index') }}">
+                <a class="nav-link" href="{{ route('admin.permissions.index') }}">
                     <span class="nav-icon">
                         <iconify-icon icon="solar:shield-keyhole-bold-duotone"></iconify-icon>
                     </span>

@@ -39,7 +39,7 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('root'));
+        return redirect()->intended(route('admin.dashboard.index'));
     }
 
     /**
@@ -61,7 +61,7 @@ class AuthController extends Controller
     public function changeLnag(Request $request, $lang)
     {
         if (in_array($lang, ['ar', 'en'])) {
-            session()->put('locale', $lang);
+            session()->put('lang', $lang);
             
             // If logged in, update admin's preferred locale
             if (Auth::guard('admin')->check()) {

@@ -6,6 +6,8 @@ use Illuminate\Database\Seeder;
 use App\Models\Admin;
 use App\Models\Role;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 
 class AdminSeeder extends Seeder
 {
@@ -16,64 +18,38 @@ class AdminSeeder extends Seeder
     {
         // 1. Create Super Admin Role
         $role = Role::updateOrCreate(
-            ['id' => 1],
-            ['name' => 'Super Admin']
+            ['name' => 'Super Admin'],
+            []
         );
 
-        // 2. Create Super Admin User (in users table for standard login)
+        // 2. Create Super Admin User (in users table for standard auth linkage)
         \App\Models\User::updateOrCreate(
             ['email' => 'admin@admin.com'],
             [
-                'name' => 'Main Admin',
+                'name' => 'Super Admin',
                 'password' => Hash::make('password'),
                 'role_id' => $role->id,
             ]
         );
 
-        // 3. Create record in admins table too (for consistency)
+        // 3. Create record in admins table too
         Admin::updateOrCreate(
             ['email' => 'admin@admin.com'],
             [
-                'name' => 'Main Admin',
+                'name' => 'Super Admin',
                 'password' => Hash::make('password'),
                 'role_id' => $role->id,
                 'is_blocked' => false,
             ]
         );
 
-        // 4. Create additional test admins
-        $supervisorRole = Role::firstOrCreate(['name' => 'Supervisor']);
-        Admin::updateOrCreate(
-            ['email' => 'supervisor@example.com'],
-            [
-                'name' => 'John Supervisor',
-                'password' => Hash::make('password'),
-                'role_id' => $supervisorRole->id,
-                'is_blocked' => false,
-            ]
-        );
-
-        $managerRole = Role::firstOrCreate(['name' => 'Manager']);
-        Admin::updateOrCreate(
-            ['email' => 'manager@example.com'],
-            [
-                'name' => 'Sarah Manager',
-                'password' => Hash::make('password'),
-                'role_id' => $managerRole->id,
-                'is_blocked' => false,
-            ]
-        );
-
-        // Ensure users table matches
-        foreach (Admin::all() as $adm) {
-            \App\Models\User::updateOrCreate(
-                ['email' => $adm->email],
-                [
-                    'name' => $adm->name,
-                    'password' => $adm->password,
-                    'role_id' => $adm->role_id,
-                ]
-            );
+        // We run the command to seed all permissions to Super Admin role
+        // This will capture every sub_route from routes/admin.php perfectly.
+        try {
+            DB::table('permissions')->where('role_id', $role->id)->delete();
+            Artisan::call('permissions:update');
+        } catch (\Exception $e) {
+             // Silently continue if the command is not fully loaded during seeder
         }
     }
 }

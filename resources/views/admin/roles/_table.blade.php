@@ -69,9 +69,9 @@
                     </td>
                     <td>
                         <div class="d-flex gap-2">
-                            <x-ui.edit-button :route="route('roles.edit', $role->id)" />
+                            <x-ui.edit-button :route="route('admin.roles.edit', $role->id)" />
                             @if($role->id != 1)
-                                <x-ui.delete-button :id="$role->id" :route="route('roles.destroy', $role->id)" />
+                                <x-ui.delete-button :id="$role->id" :route="route('admin.roles.destroy', $role->id)" />
                             @endif
                         </div>
                     </td>

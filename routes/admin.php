@@ -13,10 +13,11 @@ use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\ConfirmablePasswordController;
+use App\Http\Controllers\Admin\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
-| Admin Routes (Senior Advanced Architecture)
+| Admin Routes (Senior Advanced Architecture) - Mirroring Perfume_Admin
 |--------------------------------------------------------------------------
 */
 
@@ -66,28 +67,31 @@ Route::group(['middleware' => 'guest:admin', 'prefix' => 'admin'], function () {
     ]);
 });
 
-// --- Protected Admin Routes (Mirroring Perfume_Admin Structure) ---
-Route::group(['middleware' => ['admin.auth', 'permission']], function () {
+// --- Public Technical Routes (no 'admin.' prefix group needed) ---
+Route::get('admin/logout', ['uses' => AuthController::class . '@logout', 'as' => 'admin.logout']);
+Route::get('admin/change-lang/{lang}', ['uses' => AuthController::class . '@changeLnag', 'as' => 'admin.changeLang']);
 
-    // --- SECTION: GENERAL ---
+// --- Protected Administrative Area ---
+Route::group(['as' => 'admin.', 'middleware' => ['admin.auth', 'check-role', 'AdminReadNotificationMiddleware']], function () {
 
-    // Dashboard
-    Route::get('/', [
-        'uses' => RoutingController::class . '@index',
-        'as' => 'admin.dashboard.index', // Explicit name for permission redirection
+    // --- 1. DASHBOARD ---
+    Route::get('/dashboard', [
+        'uses' => DashboardController::class . '@index',
+        'as' => 'dashboard.index',
         'title' => ['messages.dashboard'],
         'icon' => 'solar:widget-5-bold-duotone',
         'menu_title' => 'messages.general',
         'master' => true,
     ]);
 
-    // Alias 'root' for compatibility
-    Route::get('dashboard', function () {
-        return redirect()->route('admin.dashboard.index');
-    })->name('root')->middleware('sub_route');
+    Route::get('/', [
+        'uses' => function () {
+            return redirect()->route('admin.dashboard.index');
+        },
+        'sub_route' => true
+    ])->name('root');
 
-
-    // Admins Management Menu
+    // --- 2. ADMINS MANAGEMENT ---
     Route::get('admin/admins-menu', [
         'as' => 'admins.menu',
         'type' => 'parent',
@@ -105,7 +109,33 @@ Route::group(['middleware' => ['admin.auth', 'permission']], function () {
         Route::post('bulk-delete', ['uses' => AdminController::class . '@bulkDelete', 'as' => 'bulkDelete', 'title' => ['messages.bulk_delete_admins']]);
     });
 
-    // Roles Management Menu
+    // --- 3. USERS (CUSTOMERS & SELLERS) ---
+    Route::get('users/customers-menu', [
+        'as' => 'customers.menu',
+        'type' => 'parent',
+        'title' => ['messages.customers'],
+        'icon' => 'solar:users-group-two-rounded-bold-duotone',
+        'menu_title' => 'messages.users',
+        'children' => ['customers.index', 'customers.details']
+    ]);
+    Route::group(['prefix' => 'users/customer', 'as' => 'customers.'], function () {
+        Route::get('list', ['uses' => RoutingController::class . '@thirdLevel', 'defaults' => ['first' => 'users', 'second' => 'customer', 'third' => 'list'], 'as' => 'index', 'title' => ['messages.list'], 'sub_route' => true]);
+        Route::get('details', ['uses' => RoutingController::class . '@thirdLevel', 'defaults' => ['first' => 'users', 'second' => 'customer', 'third' => 'details'], 'as' => 'details', 'title' => ['messages.details'], 'sub_route' => true]);
+    });
+
+    Route::get('users/sellers-menu', [
+        'as' => 'sellers.menu',
+        'type' => 'parent',
+        'title' => ['messages.sellers'],
+        'icon' => 'solar:shop-bold-duotone',
+        'children' => ['sellers.index', 'sellers.create']
+    ]);
+    Route::group(['prefix' => 'users/seller', 'as' => 'sellers.'], function () {
+        Route::get('list', ['uses' => RoutingController::class . '@thirdLevel', 'defaults' => ['first' => 'users', 'second' => 'seller', 'third' => 'list'], 'as' => 'index', 'title' => ['messages.list'], 'sub_route' => true]);
+        Route::get('create', ['uses' => RoutingController::class . '@thirdLevel', 'defaults' => ['first' => 'users', 'second' => 'seller', 'third' => 'create'], 'as' => 'create', 'title' => ['messages.create'], 'sub_route' => true]);
+    });
+
+    // --- 4. ROLES MANAGEMENT ---
     Route::get('admin/roles-menu', [
         'as' => 'roles.menu',
         'type' => 'parent',
@@ -123,7 +153,7 @@ Route::group(['middleware' => ['admin.auth', 'permission']], function () {
         Route::post('bulk-delete', ['uses' => RoleController::class . '@bulkDelete', 'as' => 'bulkDelete', 'title' => ['messages.bulk_delete_roles']]);
     });
 
-    // Permissions Index
+    // --- 5. PERMISSIONS ---
     Route::get('admin/permissions', [
         'uses' => RoleController::class . '@permissionsIndex',
         'as' => 'permissions.index',
@@ -132,28 +162,30 @@ Route::group(['middleware' => ['admin.auth', 'permission']], function () {
     ]);
     Route::post('admin/permissions/update-roles', [
         'uses' => RoleController::class . '@updatePermissionRoles',
-        'as' => 'admin.permissions.update-roles',
+        'as' => 'permissions.update-roles',
         'sub_route' => true
     ]);
 
-    // Products Module Menu
-    Route::get('general/products-menu', [
-        'as' => 'products.menu',
+    // --- 6. PERFUME MODULES (CORE) ---
+    Route::get('general/brand-menu', [
+        'as' => 'brands.menu',
         'type' => 'parent',
-        'title' => ['messages.products'],
-        'icon' => 'solar:t-shirt-bold-duotone',
-        'children' => ['products.index', 'products.grid', 'products.detail', 'products.create']
+        'title' => ['messages.brands'],
+        'icon' => 'solar:shop-bold-duotone',
+        'menu_title' => 'messages.products',
+        'children' => ['brands.index', 'brands.create']
     ]);
-    Route::group(['prefix' => 'general/products', 'as' => 'products.'], function () {
-        Route::get('list', ['uses' => ProductController::class . '@index', 'as' => 'index', 'title' => ['messages.list'], 'sub_route' => true]);
-        Route::get('grid', ['uses' => RoutingController::class . '@thirdLevel', 'defaults' => ['first' => 'general', 'second' => 'products', 'third' => 'grid'], 'as' => 'grid', 'title' => ['messages.grid'], 'sub_route' => true]);
-        Route::get('detail', ['uses' => RoutingController::class . '@thirdLevel', 'defaults' => ['first' => 'general', 'second' => 'products', 'third' => 'details'], 'as' => 'detail', 'title' => ['messages.details'], 'sub_route' => true]);
-        Route::get('create', ['uses' => RoutingController::class . '@thirdLevel', 'defaults' => ['first' => 'general', 'second' => 'products', 'third' => 'create'], 'as' => 'create', 'title' => ['messages.create'], 'sub_route' => true]);
-        Route::delete('{id}', ['uses' => ProductController::class . '@destroy', 'as' => 'destroy', 'title' => ['messages.delete_product']]);
-        Route::post('bulk-delete', ['uses' => ProductController::class . '@bulkDelete', 'as' => 'bulkDelete', 'title' => ['messages.bulk_delete_products']]);
+    Route::group(['prefix' => 'general/brands', 'as' => 'brands.'], function () {
+        Route::get('list', ['uses' => \App\Http\Controllers\Admin\Perfume\BrandController::class . '@index', 'as' => 'index', 'title' => ['messages.list'], 'sub_route' => true]);
+        Route::get('create', ['uses' => \App\Http\Controllers\Admin\Perfume\BrandController::class . '@create', 'as' => 'create', 'title' => ['messages.create'], 'sub_route' => true]);
+        Route::post('store', ['uses' => \App\Http\Controllers\Admin\Perfume\BrandController::class . '@store', 'as' => 'store']);
+        Route::get('{id}/edit', ['uses' => \App\Http\Controllers\Admin\Perfume\BrandController::class . '@edit', 'as' => 'edit']);
+        Route::put('{id}', ['uses' => \App\Http\Controllers\Admin\Perfume\BrandController::class . '@update', 'as' => 'update']);
+        Route::delete('{id}', ['uses' => \App\Http\Controllers\Admin\Perfume\BrandController::class . '@destroy', 'as' => 'destroy']);
+        Route::post('{id}/toggle', ['uses' => \App\Http\Controllers\Admin\Perfume\BrandController::class . '@toggle', 'as' => 'toggle']);
+        Route::post('bulk-delete', ['uses' => \App\Http\Controllers\Admin\Perfume\BrandController::class . '@bulkDelete', 'as' => 'bulkDelete']);
     });
 
-    // Category Menu
     Route::get('general/category-menu', [
         'as' => 'category.menu',
         'type' => 'parent',
@@ -162,11 +194,143 @@ Route::group(['middleware' => ['admin.auth', 'permission']], function () {
         'children' => ['category.index', 'category.create']
     ]);
     Route::group(['prefix' => 'general/category', 'as' => 'category.'], function () {
-        Route::get('list', ['uses' => RoutingController::class . '@thirdLevel', 'defaults' => ['first' => 'general', 'second' => 'category', 'third' => 'list'], 'as' => 'index', 'title' => ['messages.list'], 'sub_route' => true]);
-        Route::get('create', ['uses' => RoutingController::class . '@thirdLevel', 'defaults' => ['first' => 'general', 'second' => 'category', 'third' => 'create'], 'as' => 'create', 'title' => ['messages.create'], 'sub_route' => true]);
+        Route::get('list', ['uses' => \App\Http\Controllers\Admin\Perfume\CategoryController::class . '@index', 'as' => 'index', 'title' => ['messages.list'], 'sub_route' => true]);
+        Route::get('create', ['uses' => \App\Http\Controllers\Admin\Perfume\CategoryController::class . '@create', 'as' => 'create', 'title' => ['messages.create'], 'sub_route' => true]);
+        Route::post('store', ['uses' => \App\Http\Controllers\Admin\Perfume\CategoryController::class . '@store', 'as' => 'store']);
+        Route::get('{id}/edit', ['uses' => \App\Http\Controllers\Admin\Perfume\CategoryController::class . '@edit', 'as' => 'edit']);
+        Route::put('{id}', ['uses' => \App\Http\Controllers\Admin\Perfume\CategoryController::class . '@update', 'as' => 'update']);
+        Route::delete('{id}', ['uses' => \App\Http\Controllers\Admin\Perfume\CategoryController::class . '@destroy', 'as' => 'destroy']);
+        Route::post('{id}/toggle', ['uses' => \App\Http\Controllers\Admin\Perfume\CategoryController::class . '@toggle', 'as' => 'toggle']);
     });
 
-    // Inventory Menu
+    Route::get('general/products-menu', [
+        'as' => 'products.menu',
+        'type' => 'parent',
+        'title' => ['messages.products'],
+        'icon' => 'solar:t-shirt-bold-duotone',
+        'children' => ['products.index', 'products.grid', 'products.detail', 'products.create']
+    ]);
+    Route::group(['prefix' => 'general/products', 'as' => 'products.'], function () {
+        Route::get('list', ['uses' => \App\Http\Controllers\Admin\Perfume\ProductController::class . '@index', 'as' => 'index', 'title' => ['messages.list'], 'sub_route' => true]);
+        Route::get('create', ['uses' => \App\Http\Controllers\Admin\Perfume\ProductController::class . '@create', 'as' => 'create', 'title' => ['messages.create'], 'sub_route' => true]);
+        Route::post('store', ['uses' => \App\Http\Controllers\Admin\Perfume\ProductController::class . '@store', 'as' => 'store']);
+        Route::get('{id}/edit', ['uses' => \App\Http\Controllers\Admin\Perfume\ProductController::class . '@edit', 'as' => 'edit']);
+        Route::put('{id}', ['uses' => \App\Http\Controllers\Admin\Perfume\ProductController::class . '@update', 'as' => 'update']);
+        Route::delete('{id}', ['uses' => \App\Http\Controllers\Admin\Perfume\ProductController::class . '@destroy', 'as' => 'destroy']);
+        Route::post('bulk-delete', ['uses' => \App\Http\Controllers\Admin\Perfume\ProductController::class . '@bulkDelete', 'as' => 'bulkDelete', 'title' => ['messages.bulk_delete_products']]);
+        Route::get('grid', ['uses' => RoutingController::class . '@thirdLevel', 'defaults' => ['first' => 'general', 'second' => 'products', 'third' => 'grid'], 'as' => 'grid', 'title' => ['messages.grid'], 'sub_route' => true]);
+        Route::get('detail', ['uses' => RoutingController::class . '@thirdLevel', 'defaults' => ['first' => 'general', 'second' => 'products', 'third' => 'details'], 'as' => 'detail', 'title' => ['messages.details'], 'sub_route' => true]);
+    });
+
+    // Attributes
+    Route::get('general/sizes-menu', [
+        'as' => 'sizes.menu',
+        'type' => 'parent',
+        'title' => ['messages.sizes'],
+        'icon' => 'solar:ruler-bold-duotone',
+        'children' => ['sizes.index', 'sizes.create']
+    ]);
+    Route::group(['prefix' => 'general/sizes', 'as' => 'sizes.'], function () {
+        Route::get('list', ['uses' => \App\Http\Controllers\Admin\Perfume\SizeController::class . '@index', 'as' => 'index', 'title' => ['messages.sizes'], 'sub_route' => true]);
+        Route::get('create', ['uses' => \App\Http\Controllers\Admin\Perfume\SizeController::class . '@create', 'as' => 'create', 'sub_route' => true]);
+        Route::post('store', ['uses' => \App\Http\Controllers\Admin\Perfume\SizeController::class . '@store', 'as' => 'store']);
+        Route::get('{id}/edit', ['uses' => \App\Http\Controllers\Admin\Perfume\SizeController::class . '@edit', 'as' => 'edit']);
+        Route::put('{id}', ['uses' => \App\Http\Controllers\Admin\Perfume\SizeController::class . '@update', 'as' => 'update']);
+        Route::delete('{id}', ['uses' => \App\Http\Controllers\Admin\Perfume\SizeController::class . '@destroy', 'as' => 'destroy']);
+        Route::post('{id}/toggle', ['uses' => \App\Http\Controllers\Admin\Perfume\SizeController::class . '@toggle', 'as' => 'toggle']);
+        Route::post('bulk-delete', ['uses' => \App\Http\Controllers\Admin\Perfume\SizeController::class . '@bulkDelete', 'as' => 'bulkDelete']);
+    });
+
+    Route::get('general/notes-menu', [
+        'as' => 'notes.menu',
+        'type' => 'parent',
+        'title' => ['messages.notes'],
+        'icon' => 'solar:notes-bold-duotone',
+        'children' => ['notes.index', 'notes.create']
+    ]);
+    Route::group(['prefix' => 'general/notes', 'as' => 'notes.'], function () {
+        Route::get('list', ['uses' => \App\Http\Controllers\Admin\Perfume\NoteController::class . '@index', 'as' => 'index', 'title' => ['messages.notes'], 'sub_route' => true]);
+        Route::get('create', ['uses' => \App\Http\Controllers\Admin\Perfume\NoteController::class . '@create', 'as' => 'create', 'sub_route' => true]);
+        Route::post('store', ['uses' => \App\Http\Controllers\Admin\Perfume\NoteController::class . '@store', 'as' => 'store']);
+        Route::get('{id}/edit', ['uses' => \App\Http\Controllers\Admin\Perfume\NoteController::class . '@edit', 'as' => 'edit']);
+        Route::put('{id}', ['uses' => \App\Http\Controllers\Admin\Perfume\NoteController::class . '@update', 'as' => 'update']);
+        Route::delete('{id}', ['uses' => \App\Http\Controllers\Admin\Perfume\NoteController::class . '@destroy', 'as' => 'destroy']);
+        Route::post('{id}/toggle', ['uses' => \App\Http\Controllers\Admin\Perfume\NoteController::class . '@toggle', 'as' => 'toggle']);
+        Route::post('bulk-delete', ['uses' => \App\Http\Controllers\Admin\Perfume\NoteController::class . '@bulkDelete', 'as' => 'bulkDelete']);
+    });
+
+    // --- 7. MANUFACTURING ---
+    Route::get('manufacturing/formulas-menu', [
+        'as' => 'formulas.menu',
+        'type' => 'parent',
+        'title' => ['messages.formulas'],
+        'icon' => 'solar:flask-bold-duotone',
+        'menu_title' => 'messages.manufacturing',
+        'children' => ['formulas.index', 'formulas.create']
+    ]);
+    Route::group(['prefix' => 'manufacturing/formulas', 'as' => 'formulas.'], function () {
+        Route::get('list', ['uses' => \App\Http\Controllers\Admin\Perfume\FormulaController::class . '@index', 'as' => 'index', 'title' => ['messages.formulas'], 'sub_route' => true]);
+        Route::get('create', ['uses' => \App\Http\Controllers\Admin\Perfume\FormulaController::class . '@create', 'as' => 'create', 'sub_route' => true]);
+        Route::post('store', ['uses' => \App\Http\Controllers\Admin\Perfume\FormulaController::class . '@store', 'as' => 'store']);
+        Route::get('{id}/edit', ['uses' => \App\Http\Controllers\Admin\Perfume\FormulaController::class . '@edit', 'as' => 'edit']);
+        Route::put('{id}', ['uses' => \App\Http\Controllers\Admin\Perfume\FormulaController::class . '@update', 'as' => 'update']);
+        Route::delete('{id}', ['uses' => \App\Http\Controllers\Admin\Perfume\FormulaController::class . '@destroy', 'as' => 'destroy']);
+        Route::post('{id}/toggle', ['uses' => \App\Http\Controllers\Admin\Perfume\FormulaController::class . '@toggle', 'as' => 'toggle']);
+        Route::post('bulk-delete', ['uses' => \App\Http\Controllers\Admin\Perfume\FormulaController::class . '@bulkDelete', 'as' => 'bulkDelete']);
+    });
+
+    Route::get('manufacturing/essential-oils-menu', [
+        'as' => 'essential-oils.menu',
+        'type' => 'parent',
+        'title' => ['messages.essential_oils'],
+        'icon' => 'solar:test-tube-bold-duotone',
+        'children' => ['essential-oils.index', 'essential-oils.create']
+    ]);
+    Route::group(['prefix' => 'manufacturing/essential-oils', 'as' => 'essential-oils.'], function () {
+        Route::get('list', ['uses' => \App\Http\Controllers\Admin\Perfume\EssentialOilController::class . '@index', 'as' => 'index', 'title' => ['messages.essential_oils'], 'sub_route' => true]);
+        Route::get('create', ['uses' => \App\Http\Controllers\Admin\Perfume\EssentialOilController::class . '@create', 'as' => 'create', 'sub_route' => true]);
+        Route::post('store', ['uses' => \App\Http\Controllers\Admin\Perfume\EssentialOilController::class . '@store', 'as' => 'store']);
+        Route::get('{id}/edit', ['uses' => \App\Http\Controllers\Admin\Perfume\EssentialOilController::class . '@edit', 'as' => 'edit']);
+        Route::put('{id}', ['uses' => \App\Http\Controllers\Admin\Perfume\EssentialOilController::class . '@update', 'as' => 'update']);
+        Route::delete('{id}', ['uses' => \App\Http\Controllers\Admin\Perfume\EssentialOilController::class . '@destroy', 'as' => 'destroy']);
+        Route::post('{id}/toggle', ['uses' => \App\Http\Controllers\Admin\Perfume\EssentialOilController::class . '@toggle', 'as' => 'toggle']);
+        Route::post('bulk-delete', ['uses' => \App\Http\Controllers\Admin\Perfume\EssentialOilController::class . '@bulkDelete', 'as' => 'bulkDelete']);
+    });
+
+    Route::get('manufacturing/oil-categories-menu', [
+        'as' => 'oil-categories.menu',
+        'type' => 'parent',
+        'title' => ['messages.oil_categories'],
+        'icon' => 'solar:folder-bold-duotone',
+        'children' => ['oil-categories.index', 'oil-categories.create']
+    ]);
+    Route::group(['prefix' => 'manufacturing/oil-categories', 'as' => 'oil-categories.'], function () {
+        Route::get('list', ['uses' => \App\Http\Controllers\Admin\Perfume\OilCategoryController::class . '@index', 'as' => 'index', 'title' => ['messages.oil_categories'], 'sub_route' => true]);
+        Route::get('create', ['uses' => \App\Http\Controllers\Admin\Perfume\OilCategoryController::class . '@create', 'as' => 'create', 'sub_route' => true]);
+        Route::post('store', ['uses' => \App\Http\Controllers\Admin\Perfume\OilCategoryController::class . '@store', 'as' => 'store']);
+        Route::get('{id}/edit', ['uses' => \App\Http\Controllers\Admin\Perfume\OilCategoryController::class . '@edit', 'as' => 'edit']);
+        Route::put('{id}', ['uses' => \App\Http\Controllers\Admin\Perfume\OilCategoryController::class . '@update', 'as' => 'update']);
+        Route::delete('{id}', ['uses' => \App\Http\Controllers\Admin\Perfume\OilCategoryController::class . '@destroy', 'as' => 'destroy']);
+        Route::post('{id}/toggle', ['uses' => \App\Http\Controllers\Admin\Perfume\OilCategoryController::class . '@toggle', 'as' => 'toggle']);
+        Route::post('bulk-delete', ['uses' => \App\Http\Controllers\Admin\Perfume\OilCategoryController::class . '@bulkDelete', 'as' => 'bulkDelete']);
+    });
+
+    // --- 8. ORDERS & INVENTORY ---
+    Route::get('general/orders-menu', [
+        'as' => 'orders.menu',
+        'type' => 'parent',
+        'title' => ['messages.orders'],
+        'icon' => 'solar:bag-smile-bold-duotone',
+        'menu_title' => 'messages.orders',
+        'children' => ['orders.index', 'orders.details']
+    ]);
+    Route::group(['prefix' => 'general/orders', 'as' => 'orders.'], function () {
+        Route::get('list', ['uses' => \App\Http\Controllers\Admin\Perfume\OrderController::class . '@index', 'as' => 'index', 'title' => ['messages.list'], 'sub_route' => true]);
+        Route::get('{id}/details', ['uses' => \App\Http\Controllers\Admin\Perfume\OrderController::class . '@show', 'as' => 'details', 'title' => ['messages.details'], 'sub_route' => true]);
+        Route::post('{id}/status', ['uses' => \App\Http\Controllers\Admin\Perfume\OrderController::class . '@updateStatus', 'as' => 'updateStatus']);
+        Route::delete('{id}', ['uses' => \App\Http\Controllers\Admin\Perfume\OrderController::class . '@destroy', 'as' => 'destroy']);
+    });
+
     Route::get('general/inventory-menu', [
         'as' => 'inventory.menu',
         'type' => 'parent',
@@ -179,88 +343,88 @@ Route::group(['middleware' => ['admin.auth', 'permission']], function () {
         Route::get('received-orders', ['uses' => RoutingController::class . '@thirdLevel', 'defaults' => ['first' => 'general', 'second' => 'inventory', 'third' => 'received-orders'], 'as' => 'received', 'title' => ['messages.received_orders'], 'sub_route' => true]);
     });
 
-    // Orders Menu
-    Route::get('general/orders-menu', [
-        'as' => 'orders.menu',
+    // --- 9. LOGISTICS & FEEDBACK ---
+    Route::get('logistics/shipping-menu', [
+        'as' => 'shipping.menu',
         'type' => 'parent',
-        'title' => ['messages.orders'],
-        'icon' => 'solar:bag-smile-bold-duotone',
-        'children' => ['orders.index', 'orders.details']
+        'title' => ['messages.shipping_methods'],
+        'icon' => 'solar:truck-bold-duotone',
+        'menu_title' => 'messages.logistics',
+        'children' => ['shipping.index', 'shipping.create']
     ]);
-    Route::group(['prefix' => 'general/orders', 'as' => 'orders.'], function () {
-        Route::get('list', ['uses' => RoutingController::class . '@thirdLevel', 'defaults' => ['first' => 'general', 'second' => 'orders', 'third' => 'list'], 'as' => 'index', 'title' => ['messages.list'], 'sub_route' => true]);
-        Route::get('details', ['uses' => RoutingController::class . '@thirdLevel', 'defaults' => ['first' => 'general', 'second' => 'orders', 'third' => 'details'], 'as' => 'details', 'title' => ['messages.details'], 'sub_route' => true]);
+    Route::group(['prefix' => 'logistics/shipping', 'as' => 'shipping.'], function () {
+        Route::get('list', ['uses' => \App\Http\Controllers\Admin\Perfume\ShippingController::class . '@index', 'as' => 'index', 'title' => ['messages.shipping_methods'], 'sub_route' => true]);
+        Route::get('create', ['uses' => \App\Http\Controllers\Admin\Perfume\ShippingController::class . '@create', 'as' => 'create', 'sub_route' => true]);
+        Route::post('store', ['uses' => \App\Http\Controllers\Admin\Perfume\ShippingController::class . '@store', 'as' => 'store']);
+        Route::get('{id}/edit', ['uses' => \App\Http\Controllers\Admin\Perfume\ShippingController::class . '@edit', 'as' => 'edit']);
+        Route::put('{id}', ['uses' => \App\Http\Controllers\Admin\Perfume\ShippingController::class . '@update', 'as' => 'update']);
+        Route::delete('{id}', ['uses' => \App\Http\Controllers\Admin\Perfume\ShippingController::class . '@destroy', 'as' => 'destroy']);
+        Route::post('{id}/toggle', ['uses' => \App\Http\Controllers\Admin\Perfume\ShippingController::class . '@toggle', 'as' => 'toggle']);
+        Route::post('bulk-delete', ['uses' => \App\Http\Controllers\Admin\Perfume\ShippingController::class . '@bulkDelete', 'as' => 'bulkDelete']);
     });
 
-    // Settings
-    Route::get('general/settings', [
-        'uses' => RoutingController::class . '@secondLevel',
-        'defaults' => ['first' => 'general', 'second' => 'settings'],
-        'as' => 'general.settings',
-        'title' => ['messages.settings'],
-        'icon' => 'solar:settings-bold-duotone'
-    ]);
-
-
-    // --- SECTION: USERS ---
-
-    // Customers
-    Route::get('users/customers-menu', [
-        'as' => 'customers.menu',
+    Route::get('logistics/returns-menu', [
+        'as' => 'returns.menu',
         'type' => 'parent',
-        'title' => ['messages.customers'],
-        'icon' => 'solar:users-group-two-rounded-bold-duotone',
-        'menu_title' => 'messages.users',
-        'children' => ['customers.index', 'customers.details']
+        'title' => ['messages.return_requests'],
+        'icon' => 'solar:undo-left-round-bold-duotone',
+        'children' => ['returns.index']
     ]);
-    Route::group(['prefix' => 'users/customer', 'as' => 'customers.'], function () {
-        Route::get('list', ['uses' => RoutingController::class . '@thirdLevel', 'defaults' => ['first' => 'users', 'second' => 'customer', 'third' => 'list'], 'as' => 'index', 'title' => ['messages.list'], 'sub_route' => true]);
-        Route::get('details', ['uses' => RoutingController::class . '@thirdLevel', 'defaults' => ['first' => 'users', 'second' => 'customer', 'third' => 'details'], 'as' => 'details', 'title' => ['messages.details'], 'sub_route' => true]);
+    Route::group(['prefix' => 'logistics/returns', 'as' => 'returns.'], function () {
+        Route::get('list', ['uses' => \App\Http\Controllers\Admin\Perfume\ReturnRequestController::class . '@index', 'as' => 'index', 'title' => ['messages.return_requests'], 'sub_route' => true]);
+        Route::get('{id}/show', ['uses' => \App\Http\Controllers\Admin\Perfume\ReturnRequestController::class . '@show', 'as' => 'show', 'sub_route' => true]);
+        Route::post('{id}/status', ['uses' => \App\Http\Controllers\Admin\Perfume\ReturnRequestController::class . '@updateStatus', 'as' => 'updateStatus']);
+        Route::delete('{id}', ['uses' => \App\Http\Controllers\Admin\Perfume\ReturnRequestController::class . '@destroy', 'as' => 'destroy']);
+        Route::post('bulk-delete', ['uses' => \App\Http\Controllers\Admin\Perfume\ReturnRequestController::class . '@bulkDelete', 'as' => 'bulkDelete']);
     });
 
-    // Sellers
-    Route::get('users/sellers-menu', [
-        'as' => 'sellers.menu',
+    Route::get('feedback/reviews-menu', [
+        'as' => 'reviews.menu',
         'type' => 'parent',
-        'title' => ['messages.sellers'],
-        'icon' => 'solar:shop-bold-duotone',
-        'children' => ['sellers.index', 'sellers.create']
+        'title' => ['messages.reviews'],
+        'icon' => 'solar:chat-square-like-bold-duotone',
+        'children' => ['reviews.index']
     ]);
-    Route::group(['prefix' => 'users/seller', 'as' => 'sellers.'], function () {
-        Route::get('list', ['uses' => RoutingController::class . '@thirdLevel', 'defaults' => ['first' => 'users', 'second' => 'seller', 'third' => 'list'], 'as' => 'index', 'title' => ['messages.list'], 'sub_route' => true]);
-        Route::get('create', ['uses' => RoutingController::class . '@thirdLevel', 'defaults' => ['first' => 'users', 'second' => 'seller', 'third' => 'create'], 'as' => 'create', 'title' => ['messages.create'], 'sub_route' => true]);
+    Route::group(['prefix' => 'feedback/reviews', 'as' => 'reviews.'], function () {
+        Route::get('list', ['uses' => \App\Http\Controllers\Admin\Perfume\ReviewController::class . '@index', 'as' => 'index', 'title' => ['messages.reviews'], 'sub_route' => true]);
+        Route::get('{id}/show', ['uses' => \App\Http\Controllers\Admin\Perfume\ReviewController::class . '@show', 'as' => 'show', 'sub_route' => true]);
+        Route::post('{id}/approve', ['uses' => \App\Http\Controllers\Admin\Perfume\ReviewController::class . '@approve', 'as' => 'approve']);
+        Route::post('{id}/reject', ['uses' => \App\Http\Controllers\Admin\Perfume\ReviewController::class . '@reject', 'as' => 'reject']);
+        Route::delete('{id}', ['uses' => \App\Http\Controllers\Admin\Perfume\ReviewController::class . '@destroy', 'as' => 'destroy']);
+        Route::post('bulk-delete', ['uses' => \App\Http\Controllers\Admin\Perfume\ReviewController::class . '@bulkDelete', 'as' => 'bulkDelete']);
     });
 
-
-    // --- SECTION: OTHER ---
-
-    // Coupons
+    // --- 10. OTHER & SUPPORT ---
     Route::get('other/coupons-menu', [
         'as' => 'coupons.menu',
         'type' => 'parent',
         'title' => ['messages.coupons'],
         'icon' => 'solar:leaf-bold-duotone',
         'menu_title' => 'messages.other',
-        'children' => ['coupons.index', 'coupons.add']
+        'children' => ['coupons.index', 'coupons.create']
     ]);
-    Route::group(['prefix' => 'other', 'as' => 'coupons.'], function () {
-        Route::get('coupons-list', ['uses' => RoutingController::class . '@secondLevel', 'defaults' => ['first' => 'other', 'second' => 'coupons-list'], 'as' => 'index', 'title' => ['messages.list'], 'sub_route' => true]);
-        Route::get('coupons-add', ['uses' => RoutingController::class . '@secondLevel', 'defaults' => ['first' => 'other', 'second' => 'coupons-add'], 'as' => 'add', 'title' => ['messages.add'], 'sub_route' => true]);
+    Route::group(['prefix' => 'other/coupons', 'as' => 'coupons.'], function () {
+        Route::get('list', ['uses' => \App\Http\Controllers\Admin\Perfume\CouponController::class . '@index', 'as' => 'index', 'title' => ['messages.list'], 'sub_route' => true]);
+        Route::get('create', ['uses' => \App\Http\Controllers\Admin\Perfume\CouponController::class . '@create', 'as' => 'create', 'title' => ['messages.create'], 'sub_route' => true]);
+        Route::post('store', ['uses' => \App\Http\Controllers\Admin\Perfume\CouponController::class . '@store', 'as' => 'store']);
+        Route::get('{id}/edit', ['uses' => \App\Http\Controllers\Admin\Perfume\CouponController::class . '@edit', 'as' => 'edit']);
+        Route::put('{id}', ['uses' => \App\Http\Controllers\Admin\Perfume\CouponController::class . '@update', 'as' => 'update']);
+        Route::delete('{id}', ['uses' => \App\Http\Controllers\Admin\Perfume\CouponController::class . '@destroy', 'as' => 'destroy']);
+        Route::post('{id}/toggle', ['uses' => \App\Http\Controllers\Admin\Perfume\CouponController::class . '@toggle', 'as' => 'toggle']);
+        Route::post('bulk-delete', ['uses' => \App\Http\Controllers\Admin\Perfume\CouponController::class . '@bulkDelete', 'as' => 'bulkDelete']);
     });
 
-    // Reviews
-    Route::get('other/reviews', [
-        'uses' => RoutingController::class . '@secondLevel',
-        'defaults' => ['first' => 'other', 'second' => 'pages-review'],
-        'as' => 'other.reviews',
-        'title' => ['messages.reviews'],
-        'icon' => 'solar:chat-square-like-bold-duotone'
+    Route::get('general/settings', [
+        'uses' => \App\Http\Controllers\Admin\Perfume\WebsiteSettingController::class . '@index',
+        'as' => 'general.settings',
+        'title' => ['messages.settings'],
+        'icon' => 'solar:settings-bold-duotone'
+    ]);
+    Route::post('general/settings', [
+        'uses' => \App\Http\Controllers\Admin\Perfume\WebsiteSettingController::class . '@update',
+        'as' => 'general.settings.update'
     ]);
 
-
-    // --- SECTION: SUPPORT ---
-
-    // Help Center
     Route::get('support/help-center', [
         'uses' => RoutingController::class . '@secondLevel',
         'defaults' => ['first' => 'support', 'second' => 'help-center'],
@@ -269,8 +433,6 @@ Route::group(['middleware' => ['admin.auth', 'permission']], function () {
         'icon' => 'solar:help-bold-duotone',
         'menu_title' => 'messages.support'
     ]);
-
-    // FAQs
     Route::get('support/faqs', [
         'uses' => RoutingController::class . '@secondLevel',
         'defaults' => ['first' => 'support', 'second' => 'faqs'],
@@ -279,10 +441,7 @@ Route::group(['middleware' => ['admin.auth', 'permission']], function () {
         'icon' => 'solar:question-circle-bold-duotone'
     ]);
 
-
-    // --- SECTION: OTHER APPS ---
-
-    // Chat
+    // --- 11. APPS ---
     Route::get('apps/chat', [
         'uses' => RoutingController::class . '@secondLevel',
         'defaults' => ['first' => 'apps', 'second' => 'chat'],
@@ -291,8 +450,6 @@ Route::group(['middleware' => ['admin.auth', 'permission']], function () {
         'icon' => 'solar:chat-round-bold-duotone',
         'menu_title' => 'messages.other_apps'
     ]);
-
-    // Email
     Route::get('apps/email', [
         'uses' => RoutingController::class . '@secondLevel',
         'defaults' => ['first' => 'apps', 'second' => 'email'],
@@ -300,8 +457,6 @@ Route::group(['middleware' => ['admin.auth', 'permission']], function () {
         'title' => ['messages.email'],
         'icon' => 'solar:mailbox-bold-duotone'
     ]);
-
-    // Calendar
     Route::get('apps/calendar', [
         'uses' => RoutingController::class . '@secondLevel',
         'defaults' => ['first' => 'apps', 'second' => 'calendar'],
@@ -309,8 +464,6 @@ Route::group(['middleware' => ['admin.auth', 'permission']], function () {
         'title' => ['messages.calendar'],
         'icon' => 'solar:calendar-bold-duotone'
     ]);
-
-    // Todo
     Route::get('apps/todo', [
         'uses' => RoutingController::class . '@secondLevel',
         'defaults' => ['first' => 'apps', 'second' => 'todo'],
@@ -319,10 +472,7 @@ Route::group(['middleware' => ['admin.auth', 'permission']], function () {
         'icon' => 'solar:checklist-bold-duotone'
     ]);
 
-
-    // --- SECTION: CUSTOM & PAGES ---
-
-    // Pages Menu
+    // --- 12. COMPONENTS & CUSTOM ---
     Route::get('custom/pages-menu', [
         'as' => 'pages.menu',
         'type' => 'parent',
@@ -337,7 +487,6 @@ Route::group(['middleware' => ['admin.auth', 'permission']], function () {
         Route::get('maintenance', ['uses' => RoutingController::class . '@thirdLevel', 'defaults' => ['first' => 'custom', 'second' => 'pages', 'third' => 'maintenance'], 'as' => 'maintenance', 'title' => ['messages.maintenance'], 'sub_route' => true]);
     });
 
-    // Widgets
     Route::get('custom/widgets', [
         'uses' => RoutingController::class . '@secondLevel',
         'defaults' => ['first' => 'custom', 'second' => 'widgets'],
@@ -346,8 +495,6 @@ Route::group(['middleware' => ['admin.auth', 'permission']], function () {
         'icon' => 'solar:atom-bold-duotone'
     ]);
 
-
-    // --- SECTION: COMPONENTS UI (Grouped) ---
     Route::get('components/ui-menu', [
         'as' => 'ui.menu',
         'type' => 'parent',
@@ -363,11 +510,10 @@ Route::group(['middleware' => ['admin.auth', 'permission']], function () {
         Route::get('tables', ['uses' => RoutingController::class . '@thirdLevel', 'defaults' => ['first' => 'components_ui', 'second' => 'tables', 'third' => 'basic'], 'as' => 'tables', 'title' => ['messages.tables'], 'sub_route' => true]);
     });
 
+});
 
-    // Hide technical routes from Sidebar but keep active for internal logic
-    Route::get('admin/logout', ['uses' => AuthController::class . '@logout', 'as' => 'admin.logout', 'sub_route' => true]);
-    Route::get('admin/change-lang/{lang}', ['uses' => AuthController::class . '@changeLnag', 'as' => 'admin.changeLang', 'sub_route' => true]);
-
+// --- Dynamic Catch-all Routes (Naming Compatibility Layer) ---
+Route::group(['middleware' => ['admin.auth', 'check-role', 'AdminReadNotificationMiddleware']], function () {
     // Generic Dynamic Routing
     Route::get('{first}/{second}/{third}', ['uses' => RoutingController::class . '@thirdLevel', 'as' => 'third', 'sub_route' => true]);
     Route::get('{first}/{second}', ['uses' => RoutingController::class . '@secondLevel', 'as' => 'second', 'sub_route' => true]);

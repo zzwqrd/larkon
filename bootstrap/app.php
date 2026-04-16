@@ -16,12 +16,22 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->web(append: [
-            \App\Http\Middleware\SetLocale::class,
+            \App\Http\Middleware\LanguageSwitcher::class,
             \App\Http\Middleware\SecurityShieldMiddleware::class,
+            \App\Http\Middleware\XssSanitizer::class,
         ]);
+
         $middleware->alias([
-            'permission' => \App\Http\Middleware\CheckPermission::class,
             'admin.auth' => \App\Http\Middleware\AdminAuthMiddleware::class,
+            'check-role' => \App\Http\Middleware\CheckRoleMiddleware::class,
+            'permission' => \App\Http\Middleware\CheckRoleMiddleware::class, // Fallback alias
+            'AdminReadNotificationMiddleware' => \App\Http\Middleware\AdminReadNotificationMiddleware::class,
+            'security.shield' => \App\Http\Middleware\SecurityShieldMiddleware::class,
+            'xss.sanitizer' => \App\Http\Middleware\XssSanitizer::class,
+            'lang.switcher' => \App\Http\Middleware\LanguageSwitcher::class,
+            'admin.read.notifications' => \App\Http\Middleware\AdminReadNotificationMiddleware::class,
+            'get.location' => \App\Http\Middleware\GetLocation::class,
+            'isAdmin' => \App\Http\Middleware\isAdmin::class,
         ]);
 
         $middleware->redirectTo(

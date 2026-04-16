@@ -54,7 +54,7 @@
 
                         <x-ui.edit-button :route="route('third', ['general', 'products', 'edit'])" />
 
-                        <x-ui.delete-button :id="$product->id" :route="route('products.destroy', $product->id)" />
+                        <x-ui.delete-button :id="$product->id" :route="route('admin.products.destroy', $product->id)" />
                     </div>
                 </td>
             </tr>

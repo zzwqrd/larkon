@@ -53,4 +53,12 @@ class Admin extends Authenticatable
     {
         return $this->belongsTo(Role::class);
     }
+
+    /**
+     * Relationship with Activity Logs (Polymorphic)
+     */
+    public function activityLogs()
+    {
+        return $this->morphMany(ActivityLog::class, 'userable');
+    }
 }

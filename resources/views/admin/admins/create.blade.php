@@ -5,7 +5,7 @@
 @endsection
 
 @section('content')
-    <form action="{{ route('admins.store') }}" method="POST" id="adminForm" enctype="multipart/form-data">
+    <form action="{{ route('admin.admins.store') }}" method="POST" id="adminForm" enctype="multipart/form-data">
         @csrf
         <div class="row">
             <!-- Left Side: Avatar & Quick Info -->
@@ -101,7 +101,7 @@
                 </div>
 
                 <div class="p-3 bg-light mb-3 rounded d-flex justify-content-end gap-2">
-                    <a href="{{ route('admins.list') }}" class="btn btn-outline-secondary px-4">Cancel</a>
+                    <a href="{{ route('admin.admins.list') }}" class="btn btn-outline-secondary px-4">Cancel</a>
                     <button type="submit" class="btn btn-primary px-4">Create Admin</button>
                 </div>
             </div>
